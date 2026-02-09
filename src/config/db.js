@@ -3,12 +3,14 @@
 const { Pool } = require('pg');
 require('dotenv').config();
 
-const pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
-    ssl: {
-        rejectUnauthorized: false // REQUIRED for cloud databases (Neon/Render)
-    }
-});
+const isProduction = process.env.NODE_ENV === 'production';
+
+const connectionConfig = {
+    connectionString: process.env.DATABASE_URL, // This reads the long URL from Render/Neon
+    ssl: isProduction ? { rejectUnauthorized: false } : false // REQUIRED for Cloud DBs
+};
+
+const pool = new Pool(connectionConfig);
 
 // const pool = new Pool({
 //     user: 'postgres',
@@ -19,13 +21,12 @@ const pool = new Pool({
 // });
 
 // Optional: Test connection on startup
-pool.connect((err, client, done) => {
-    if (err) {
-        console.error('Database connection failed:', err.stack);
-        return;
-    }
-    console.log('Successfully connected to PostgreSQL database.');
-    done();
+pool.on('connect', () => {
+    console.log('✅ Database connected successfully!');
+});
+
+pool.on('error', (err) => {
+    console.error('❌ Database connection error:', err);
 });
 
 module.exports = pool;
