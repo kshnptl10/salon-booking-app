@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>Sign UP</title>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+<!--===============================================================================================-->	
+	<link rel="icon" type="image/png" href="../images/icons/favicon.ico"/>
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="../vendor/bootstrap/css/bootstrap.min.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="../fonts/font-awesome-4.7.0/css/font-awesome.min.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="../vendor/animate/animate.css">
+<!--===============================================================================================-->	
+	<link rel="stylesheet" type="text/css" href="../vendor/css-hamburgers/hamburgers.min.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="../vendor/select2/select2.min.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="../css/util.css">
+	<link rel="stylesheet" type="text/css" href="../css/main.css">
+<!--===============================================================================================-->
+</head>
+<body>
+  <div class="limiter">
+		<div class="container-login100">
+			<div class="wrap-login100">
+				<div class="login100-pic js-tilt" data-tilt>
+					<img src="../images/Login_Image.jpg" alt="IMG">
+				</div>
+
+				<form class="login100-form validate-form" id="signupForm" action="#" method="POST">
+					<span class="login100-form-title">
+						Sign UP
+					</span>
+
+          <div class="wrap-input100 validate-input">
+						<input class="input100" type="text" name="name" placeholder="Full Name">
+						<span class="focus-input100"></span>
+						<span class="symbol-input100">
+							<i class="fa fa-user" aria-hidden="true"></i>
+						</span>
+					</div>
+          
+          <div class="wrap-input100 validate-input">
+						<input id="phoneInput" class="input100" type="tel" name="phone" placeholder="Phone Number" pattern="[0-9]{10}" maxlength="10" title="Phone number must be exactly 10 digits (0-9)" required>
+						<span class="focus-input100"></span>
+            <span class="symbol-input100">
+							<i class="fa fa-phone" aria-hidden="true"></i>
+						</span>
+					</div>
+
+					<div class="wrap-input100 validate-input" data-validate = "Valid email is required: ex@abc.xyz">
+						<input class="input100" type="text" name="email" placeholder="Email">
+						<span class="focus-input100"></span>
+						<span class="symbol-input100">
+							<i class="fa fa-envelope" aria-hidden="true"></i>
+						</span>
+					</div>
+
+					<div class="wrap-input100 validate-input" data-validate = "Password is required">
+						<input class="input100" type="password" name="password" placeholder="Password">
+						<span class="focus-input100"></span>
+						<span class="symbol-input100">
+							<i class="fa fa-lock" aria-hidden="true"></i>
+						</span>
+					</div>
+					
+					<div class="container-login100-form-btn">
+						<button type="submit" class="login100-form-btn"> 
+							Sign UP
+						</button>
+					</div>
+
+					<div id="messageContainer" class="text-center p-t-15" style="min-height: 25px;"></div>
+
+					<div class="text-center p-t-136">
+						<a class="txt2" href="c_login.html">
+							Already have Account?
+							<i class="fa fa-long-arrow-right m-l-5" aria-hidden="true"></i>
+						</a>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+  <!--===============================================================================================-->	
+	<script src="../vendor/jquery/jquery-3.2.1.min.js"></script>	
+<!--==============================================================================================-->
+	<script src="../vendor/bootstrap/js/popper.js"></script>
+	<script src="../vendor/bootstrap/js/bootstrap.min.js"></script>
+<!--===============================================================================================-->
+	<script src="../vendor/select2/select2.min.js"></script>
+<!--===============================================================================================-->
+	<script src="../vendor/tilt/tilt.jquery.min.js"></script>
+
+	<script>
+        document.getElementById('signupForm').addEventListener('submit', async function(e) {
+            
+            e.preventDefault(); // This line MUST execute!
+            const form = this;
+            const msgContainer = document.getElementById('messageContainer');
+            msgContainer.innerHTML = ''; 
+
+            const name = form.elements.name.value;
+            const email = form.elements.email.value;
+            const password = form.elements.password.value;
+            const phone = form.elements.phone.value;
+		
+            if (!name || !email || !password || !phone) {
+                msgContainer.innerHTML = '<span style="color: red;">All fields are required.</span>';
+                return;
+            }
+
+			if (phone.length !== 10 || isNaN(phone)) {
+        		msgContainer.innerHTML = '<span style="color: red;">Phone number must be exactly 10 digits.</span>';
+        		return;
+   			 }
+            try {
+                msgContainer.innerHTML = '<span style="color: blue;"><i class="fa fa-spinner fa-spin"></i> Registering...</span>';
+                
+                // 🛑 CRITICAL PATH CHECK: USE THE CORRECT ROUTE
+                // Based on your previous success image, try the direct server route first: '/signup-customer'
+                const API_ROUTE = '/signup-customer'; // <--- TRY THIS FIRST
+                // If the above fails, use the API route: '/api/auth/signup' 
+                
+                const response = await fetch(API_ROUTE, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, email, password, phone })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    const successMessage = data.message || "Registration successful! Please log in.";
+                    localStorage.setItem('signupSuccessMessage', successMessage);
+
+                    msgContainer.innerHTML = `<span style="color: green;">${data.message}</span>`;
+        
+                    setTimeout(() => {
+                        window.location.href = '/c_login.html'; 
+                    }, 1500);
+                    
+                } else {
+                    // Display error from the server (e.g., "Email already registered.")
+                    msgContainer.innerHTML = `<span style="color: red;">${data.message || 'Registration failed.'}</span>`;
+                }
+
+            } catch (error) {
+                console.error('Signup fetch error:', error);
+                msgContainer.innerHTML = '<span style="color: red;">Network error. Could not connect to the server.</span>';
+            }
+        });
+
+    </script>
+	<script >
+	document.addEventListener('DOMContentLoaded', function() {
+        const phoneInput = document.getElementById('phoneInput');
+
+        if (phoneInput) {
+            // Use the 'input' event, which fires whenever the field's value changes
+            phoneInput.addEventListener('input', function(event) {
+                let value = event.target.value;
+                
+                // 1. Use a regular expression to match and replace anything that IS NOT a digit (0-9)
+                value = value.replace(/[^0-9]/g, '');
+                
+                // 2. Limit the length to 10 characters (optional, since maxlength is also used)
+                if (value.length > 10) {
+                    value = value.substring(0, 10);
+                }
+                
+                // 3. Update the input field with the cleaned, numbers-only value
+                event.target.value = value;
+            });
+        }
+        
+    });
+	</script>
+
+</body>
+</html>

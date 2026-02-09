@@ -1,0 +1,782 @@
+/* ================================================= */
+/* 1. 🎨 Global Variables (Root)                     */
+/* ================================================= */
+:root {
+  /* Colors */
+  --primary-color: #0d6efd;
+  --primary-hover: #005fa3;
+  --primary-gradient: linear-gradient(135deg, #106ee9ad 0%, #4d8be77c 100%);
+  --secondary-color: #2d8ee2;
+  --success-color: #28a745;
+  --danger-color: #dc3545;
+  --warning-color: #ffc107;
+  
+  /* Backgrounds & Text */
+  --light-bg: #f7f9fb;
+  --card-bg: #fff;
+  --text-dark: #333;
+  --text-muted: #555;
+  --text-light: #888;
+
+  /* Dimensions */
+  --sidebar-width: 220px;
+  --header-height: 60px;
+  --border-radius-sm: 5px;
+  --border-radius-md: 10px;
+  --border-radius-lg: 15px;
+  
+
+  /* Fonts */
+  --font: "Poppins", sans-serif;
+}
+
+/* ================================================= */
+/* 2. 🌐 Reset & Base Styles                         */
+/* ================================================= */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font);
+  background-color: var(--light-bg);
+  margin: 0;
+  padding: 0;
+  color: var(--text-dark);
+  min-height: 100vh;
+}
+
+/* Helper for the Profile Page only (Add this class to body on profile.html) */
+body.layout-centered {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+h1, h2, h3 {
+  margin: 0.5rem 0;
+}
+
+a {
+  text-decoration: none;
+}
+
+/* Utility Classes */
+.hidden { display: none !important; }
+.text-center { text-align: center; }
+
+/* ================================================= */
+/* 3. 🧩 Components (Buttons, Cards, Forms)          */
+/* ================================================= */
+
+/* --- Buttons --- */
+button, .btn {
+  cursor: pointer;
+  border: none;
+  border-radius: var(--border-radius-sm);
+  padding: 8px 10px;
+  font-size: 1rem;
+  transition: all 0.2s ease-in-out;
+  display: inline-block;
+}
+
+.btn:active { transform: scale(0.98); }
+
+/* Button Variants */
+.btn-primary { background-color: var(--primary-color); color: white; }
+.btn-primary:hover { background-color: var(--primary-hover); }
+
+.btn-secondary { background-color: var(--secondary-color); color: white; }
+.btn-secondary:hover { background-color: #5a6268; }
+
+.btn-success, .btn-save { background-color: var(--success-color); color: white; }
+.btn-danger, .btn-cancel { background-color: var(--danger-color); color: white; }
+
+/* Custom Close Button (X) */
+.custom-close-btn, .btn-close {
+  background: transparent;
+  border: none;
+  font-size: 1.5rem;
+  line-height: 1;
+  font-weight: bold;
+  color: var(--text-dark);
+  cursor: pointer;
+  opacity: 0.5;
+  transition: opacity 0.2s;
+}
+.custom-close-btn:hover, .btn-close:hover { opacity: 1; color: var(--danger-color); }
+
+/* --- Forms --- */
+input, select, textarea {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: var(--border-radius-sm);
+  width: 100%;
+  font-family: inherit;
+}
+
+/* --- Cards (Generic) --- */
+.card {
+  background-color: var(--card-bg);
+  border-radius: var(--border-radius-md);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  padding: 1rem;
+  transition: transform 0.2s ease;
+}
+
+.card:hover { transform: scale(1.03); }
+
+.card img {
+  width: 100%;
+  height: 150px;
+  object-fit: cover;
+  border-top-left-radius: var(--border-radius-md);
+  border-top-right-radius: var(--border-radius-md);
+}
+
+/* ================================================= */
+/* 4. 🧭 Layout (Header, Sidebar, Main)              */
+/* ================================================= */
+
+/* Header */
+header {
+  height: var(--header-height);
+  background-color: var(--primary-color);
+  color: white;
+  padding: 0 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  z-index: 500;
+}
+
+header .header-left, header .header-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+/* Sidebar */
+.sidebar {
+  width: var(--sidebar-width);
+  flex-shrink: 0;
+  background-color: var(--primary-color);
+  min-height: 100vh;
+  color: white;
+  padding-top: 2rem;
+  transition: left 0.3s ease-in-out;
+}
+
+.sidebar ul { list-style: none; padding: 0; margin: 0; }
+
+.sidebar li a {
+  display: block;
+  color: white;
+  padding: 1rem 2rem;
+  transition: background-color 0.2s;
+}
+
+.sidebar li a:hover, .sidebar li.active a {
+  background-color: var(--primary-hover);
+  font-weight: 600;
+}
+
+/* Main Container */
+.dashboard .container, .booking .container {
+  display: flex;
+  min-height: calc(100vh - var(--header-height));
+  width: 100%;
+}
+
+main {
+  flex: 1;
+  padding: 2rem;
+  overflow-x: hidden;
+}
+
+/* Footer */
+footer {
+  text-align: center;
+  padding: 1rem;
+  background-color: #e9f2ff;
+  color: var(--primary-color);
+  font-size: 0.9rem;
+}
+
+/* Search Bar */
+.search-bar { flex-grow: 1; max-width: 400px; margin: 0 20px; }
+.search-bar input { border-radius: 20px; border: none; padding: 0.6rem 1rem; }
+/* --- Search Results Dropdown --- */
+.header-right .search-bar {
+    position: relative; /* Needed to anchor the dropdown */
+}
+
+.search-results-dropdown {
+    position: absolute;
+    top: 100%; /* Push it right below the input */
+    left: 0;
+    width: 100%;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 0 0 8px 8px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    z-index: 1000;
+    max-height: 300px;
+    overflow-y: auto;
+    display: none; /* Hidden by default */
+}
+
+.search-results-dropdown.active {
+    display: block; /* Show when active */
+}
+
+.search-item {
+    padding: 10px 15px;
+    border-bottom: 1px solid #eee;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.search-item:last-child {
+    border-bottom: none;
+}
+
+.search-item:hover {
+    background-color: #f7f9fb;
+}
+
+.search-item strong {
+    display: block;
+    color: #333;
+    font-size: 0.95rem;
+}
+
+.search-item small {
+    color: #888;
+    font-size: 0.8rem;
+}
+
+.search-tag {
+    background: #e9ecef;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    color: #555;
+    text-transform: uppercase;
+}
+
+/* Profile Bubble */
+.profile-bubble {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: var(--card-bg);
+  color: var(--primary-hover);
+  padding: 5px 10px;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+.profile-bubble:hover { transform: scale(1.05); }
+.profile-bubble img { width: 35px; height: 35px; border-radius: 50%; border: 2px solid var(--primary-hover); }
+
+/* ================================================= */
+/* 5. 🗂️ Page Specifics                              */
+/* ================================================= */
+
+/* --- Dashboard --- */
+.card-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.appointments { display: flex; flex-direction: column; gap: 1rem; }
+
+.appointment-card {
+  background: var(--card-bg);
+  border-left: 5px solid var(--primary-color);
+  border-radius: 8px;
+  padding: 1rem;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+  margin-bottom: 10px;
+}
+
+/* Status Colors */
+.status-completed { color: var(--secondary-color); font-weight: bold; }
+.status-pending { color: var(--danger-color); font-weight: bold; }
+.status-active { color: var(--warning-color); font-weight: bold; }
+
+/* --- Booking --- */
+.booking main { max-width: 600px; margin: 2rem auto; }
+.time-slot-picker { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
+
+.btn-slot {
+  background-color: #e9ecef;
+  color: var(--text-dark);
+  padding: 8px 12px;
+  border: 1px solid #dee2e6;
+  border-radius: 5px;
+}
+.btn-slot:hover { background-color: #cfd3d7; }
+.btn-slot.selected {
+  background-color: var(--primary-color);
+  color: white;
+  border-color: var(--primary-hover);
+}
+
+/* --- Customer Profile Page (Special Layout) --- */
+.profile-card {
+  background: white;
+  width: 100%;
+  max-width: 450px;
+  border-radius: var(--border-radius-lg);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  max-height: 90vh;
+}
+
+.card-header {
+  background: var(--primary-gradient);
+  padding: 30px 20px;
+  text-align: center;
+  color: white;
+}
+
+.avatar-container {
+  position: relative; 
+    width: 120px;       /* Adjust size as needed */
+    height: 120px;
+    margin: 0 auto 10px;
+    border-radius: 50%; /* Circular container */
+    overflow: hidden;
+}
+
+.avatar {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 4px solid rgba(255,255,255,0.3);
+  object-fit: cover;
+  display: block;
+}
+
+/* The dark overlay with the camera icon */
+.avatar-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6); /* Semi-transparent black */
+    color: white;
+    display: none; /* HIDDEN BY DEFAULT */
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.avatar-overlay:hover {
+    background-color: rgba(0, 0, 0, 0.8); /* Darker on hover */
+}
+
+/* --- STATE: Edit Mode --- */
+/* When the container has the class 'edit-mode', show the overlay */
+.avatar-container.edit-mode .avatar-overlay {
+    display: flex; 
+}
+
+.card-body { padding: 20px 30px; overflow-y: auto; flex-grow: 1; }
+
+.form-row { margin-bottom: 15px; border-bottom: 1px solid #eee; }
+.form-row label {
+  display: block; font-size: 0.85rem; color: var(--text-light);
+  margin-bottom: 5px; text-transform: uppercase; letter-spacing: 1px;
+}
+
+.form-row input, .form-row textarea {
+  border: none; background: transparent; padding: 5px 0 10px 0; outline: none;
+}
+
+/* Edit Mode Styling */
+.form-row input:not(:disabled), .form-row textarea:not(:disabled) {
+  border-bottom: 2px solid #764ba2;
+  background-color: rgba(118, 75, 162, 0.05);
+  padding-left: 5px;
+}
+
+.card-footer {
+  padding: 20px;
+  background-color: #f8f9fa;
+  border-top: 1px solid #eee;
+  text-align: center;
+}
+.card-footer .btn { width: 100%; max-width: 200px; border-radius: 30px; }
+
+/* ================================================= */
+/* 6. 🪟 Modals & Popups                             */
+/* ================================================= */
+/* Hidden state for modals */
+/* 1. THE PARENT WRAPPER (Handles full screen & centering) */
+.salonmodal-backdrop {
+    position: fixed;
+    z-index: 9999;
+    top: 0; 
+    left: 0;
+    width: 100vw; 
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.7); /* Dark overlay */
+    
+    /* Flexbox Magic: Centers the child (.modal-content) automatically */
+    display: none; 
+    justify-content: center;
+    align-items: center;
+    
+    /* Hide by default (toggle via JS by adding a class or inline style) */
+    display: none; 
+}
+
+/* Add this utility class to show it via JS */
+.salonmodal-backdrop.show {
+    display: flex;
+}
+.salon-modal {
+    position: fixed;    /* Float freely relative to the screen */
+    top: 50%;           /* Move top edge to vertical center */
+    left: 50%;          /* Move left edge to horizontal center */
+    transform: translate(-50%, -50%); /* EXACT CENTER: Shift back by half its own width/height */
+    width: 90%;
+    max-width: 500px;
+    padding: 0;
+    border-radius: 8px;
+    
+    z-index: 10000;   
+    
+    margin: 0 !important; 
+}
+
+.salonmodal-content {
+    background-color: var(--card-bg, #fff); 
+    border-radius: var(--border-radius-md, 8px);
+    border: 1px solid #ccc;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    width: 90%;
+    max-width: 500px;
+}
+
+/* 3. HEADER & TITLE (Merged duplicates) */
+.salonmodal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    border-bottom: 1px solid #eee;
+}
+
+.salonmodal-title {
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: var(--text-dark, #333);
+    margin: 0;
+}
+
+/* 4. BODY & FOOTER */
+.salonmodal-body {
+    padding: 1.5rem;
+}
+
+.salonmodal-footer {
+    display: flex;
+    justify-content: center; /* Or 'flex-end' for right alignment */
+    padding: 1rem;
+    border-top: 1px solid #eee;
+    gap: 0.75rem;
+}
+
+.salonmodal-footer .btn-secondary {
+    background-color: #6c757d;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.salonmodal-footer .btn-secondary:hover {
+    background-color: #5a6268;
+}
+/* 1. THE DARK OVERLAY (Parent) */
+.appointmentmodal-backdrop {
+    /* Covers the entire screen */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    
+    /* Dark semi-transparent background */
+    background-color: rgba(0, 0, 0, 0.5); 
+    
+    /* Ensure it's on top */
+    z-index: 1050;
+    
+    /* Hidden by default (JS will toggle this to block/flex) */
+    display: none; 
+}
+
+/* 2. THE WHITE CARD (Child) */
+/* Your HTML calls this "reschedule-modal", so we target that */
+.reschedule-modal {
+    /* Position relative to the window/screen */
+    position: fixed;
+    
+    /* Center using the Transform trick */
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    
+    /* Box Styling */
+    background-color: white;
+    width: 90%;          /* Responsive width */
+    max-width: 500px;    /* Max width for desktop */
+    padding: 0;          /* Reset padding (inner elements have padding) */
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    
+    /* Must be higher than backdrop */
+    z-index: 1051;       
+}
+
+/* 3. OPTIONAL: Utility to show the modal via JS */
+.appointmentmodal-backdrop.show {
+    display: block;
+}
+
+/* 3. HEADER & TITLE (Merged duplicates) */
+.appointmentmodal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    border-bottom: 1px solid #eee;
+}
+
+.appointmentmodal-title {
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: var(--text-dark, #333);
+    margin: 0;
+}
+
+/* 4. BODY & FOOTER */
+.appointmentmodal-body {
+    padding: 1.5rem;
+}
+
+.appointmentmodal-footer {
+    display: flex;
+    justify-content: center; /* Or 'flex-end' for right alignment */
+    padding: 1rem;
+    border-top: 1px solid #eee;
+    gap: 0.75rem;
+}
+
+.appointmentmodal-footer .btn-secondary {
+    background-color: #6c757d;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.appointmentmodal-footer .btn-secondary:hover {
+    background-color: #5a6268;
+}
+
+/* Form Styling */
+.form-group {
+    margin-bottom: 1.2rem;
+}
+
+.form-group label {
+    display: block;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #444;
+    margin-bottom: 0.5rem;
+}
+
+.styled-input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 1rem;
+}
+
+/* --- TIME SLOT GRID STYLING --- */
+.time-slot-picker {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 5px;
+    max-height: 150px;
+    overflow-y: auto; /* Scroll if too many slots */
+    padding: 5px;
+    border: 1px solid #f0f0f0;
+    border-radius: 6px;
+    background: #fafafa;
+}
+
+/* The buttons your JS creates should use this class (or style generic buttons inside) */
+.time-slot-picker button, 
+.slot-btn { 
+    padding: 8px 12px;
+    font-size: 0.85rem;
+    border: 1px solid #ddd;
+    background: white;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.time-slot-picker button:hover,
+.slot-btn:hover {
+    border-color: #007bff;
+    color: #007bff;
+}
+
+/* Style for the SELECTED slot */
+.time-slot-picker button.selected,
+.slot-btn.selected {
+    background-color: #007bff;
+    color: white;
+    border-color: #007bff;
+}
+
+.empty-msg {
+    font-size: 0.85rem;
+    color: #999;
+    padding: 5px;
+}
+
+/* Status Message */
+.status-msg {
+    font-size: 0.9rem;
+    margin-top: 10px;
+    text-align: center;
+    color: #dc3545; /* Red for errors by default */
+}
+
+/* Profile Dropdown Popup */
+.profile-menu-popup {
+  display: none;
+  position: fixed;
+  top: var(--header-height);
+  right: 20px;
+  width: 200px;
+  background-color: var(--card-bg);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  padding: 10px 0;
+  z-index: 1000;
+}
+.profile-menu-popup.open { display: block; }
+.profile-menu-popup a { padding: 8px 15px; display: block; color: var(--text-dark); }
+.profile-menu-popup a:hover { background-color: var(--light-bg); }
+
+/* ================================================= */
+/* 7. 📱 Media Queries                               */
+/* ================================================= */
+@media screen and (max-width: 768px) {
+  header { padding: 0 1rem; height: auto; }
+  header h1 { font-size: 1.2rem; }
+  header .search-bar { display: none; }
+  
+  .hamburger { display: block; font-size: 1.5rem; color: white; background: none; border: none; }
+  
+  /* Mobile Sidebar Overlay */
+  .sidebar {
+    position: fixed;
+    left: calc(-1 * var(--sidebar-width));
+    top: 0;
+    height: 100%;
+    z-index: 1000;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
+  }
+  .sidebar.open { left: 0; }
+}
+
+@media screen and (min-width: 769px) {
+  .hamburger { display: none; }
+}
+
+/* 1. The Container for Title & Button */
+.appointments-header {
+    display: flex;
+    justify-content: space-between; /* Pushes items to far ends */
+    align-items: center;            /* Centers them vertically */
+    
+    padding-bottom: 20px;           /* Space between header and list */
+    border-bottom: 1px solid #eee;  /* Optional: Divider line */
+    margin-bottom: 20px;
+}
+
+/* 2. The Title */
+.section-title {
+    margin: 0;
+    font-size: 1.5rem;
+    color: #333;
+    font-weight: 600;
+}
+
+/* 3. The "Book New" Button */
+.btn-book-new {
+    background-color: #007bff; /* Bright Blue */
+    color: white;
+    text-decoration: none;
+    
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    
+    /* Flexbox inside button to align icon and text */
+    display: inline-flex;
+    align-items: center;
+    gap: 8px; /* Space between icon and text */
+    
+    transition: background-color 0.2s;
+    border: none;
+    cursor: pointer;
+}
+
+.btn-book-new:hover {
+    background-color: #0056b3; /* Darker blue on hover */
+}
+
+/* RESPONSIVE TWEAK: Stack them on very small mobile screens */
+@media (max-width: 480px) {
+    .appointments-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+    
+    .btn-book-new {
+        width: 100%;
+        justify-content: center;
+    }
+}

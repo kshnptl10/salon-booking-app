@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Users & Roles | Admin</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="../css/style_admin.css">
+</head>
+<style>
+    
+    .profile-wrapper {
+    position: relative; /* Critical for absolute positioning of the menu */
+    display: inline-block;
+    cursor: pointer;
+}
+
+.avatar {
+    width: 40px;
+    height: 40px;
+    background-color: #4a90e2; /* Blue */
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    user-select: none;
+}
+
+.avatar:hover {
+    background-color: #357abd;
+}
+
+/* The Dropdown Popup */
+.profile-dropdown {
+    display: none; /* Hidden by default */
+    position: absolute;
+    top: 55px; /* Push it down below avatar */
+    right: 0;  /* Align to right edge */
+    width: 200px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    z-index: 1000;
+    overflow: hidden;
+    border: 1px solid #eee;
+}
+
+/* Class added by JS to show the menu */
+.profile-dropdown.active {
+    display: block;
+    animation: fadeIn 0.2s ease-in-out;
+}
+
+/* Dropdown Content Styles */
+.dropdown-header {
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #eee;
+}
+
+.dropdown-header strong { display: block; color: #333; }
+.dropdown-header small { color: #666; font-size: 0.85em; }
+
+.dropdown-item {
+    padding: 12px 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #444;
+    text-decoration: none;
+    transition: background 0.2s;
+    cursor: pointer;
+}
+
+.dropdown-item:hover {
+    background-color: #f1f7ff;
+    color: #4a90e2;
+}
+
+.dropdown-item.logout {
+    color: #d9534f; /* Red for logout */
+    border-top: 1px solid #eee;
+}
+
+.dropdown-item.logout:hover {
+    background-color: #fff5f5;
+}
+
+/* Simple Fade Animation */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+  </style>
+<body>
+
+<!-- ================= SIDEBAR ================= -->
+<div class="sidebar" id="sidebar">
+   <h2>Salon Admin</h2>
+
+  <a href="dashboard.html"><span>Dashboard</span></a>
+  <a href="manage-salons.html"><span>Salons</span></a>
+  <a href="manage-managers.html"><span>Managers</span></a>
+  <a href="#" class="active"><span>Users & Roles</span></a>
+  <a href="reports.html"><span>Reports</span></a>
+  <a href="settings.html"><span>Settings</span></a>
+  <a href="audit-logs.html"><span>Audit Logs</span></a>
+  <a href="#"><span>Logout</span></a>
+</div>
+
+<!-- ================= TOP HEADER ================= -->
+<div class="top-header" id="topHeader">
+    <div class="header-left">
+      <div class="hamburger" onclick="toggleSidebar()">☰</div>
+      <strong>User & Roles</strong>
+    </div>
+
+    <div class="header-right">
+      
+        <div class="user-info">
+        <div class="profile-wrapper">
+        <div class="avatar" id="navUserAvatar" onclick="toggleProfileMenu()">A</div>
+        <div class="profile-dropdown" id="profileDropdown">
+            <div class="dropdown-header">
+                <strong id="navUserName">User Name</strong>
+                <small id="navUserRole">Role</small>
+            </div>
+            <hr>
+            <a href="profile.html" class="dropdown-item">
+                <i class="icon">👤</i> My Profile
+            </a>
+            <a href="settings.html" class="dropdown-item">
+                <i class="icon">⚙️</i> Settings
+            </a>
+            <div class="dropdown-item logout" onclick="handleLogout()">
+                <i class="icon">⏻</i> Logout
+            </div>
+        </div>
+    </div>
+</div>
+
+    
+    </div>
+  </div>
+
+<!-- ================= MAIN CONTENT ================= -->
+<div class="main" id="mainContent">
+
+  <!-- USERS -->
+  <div class="section" style="display:flex; justify-content:space-between; align-items:center;">
+    <h3 style="margin:0;">Users</h3>
+    <button class="btn-primary" onclick="openUserModal()">+ Add User</button>
+  </div>
+
+  <div class="section">
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Role</th>
+          <th>Assigned Salon</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Admin</td>
+          <td>admin@salonapp.com</td>
+          <td>Admin</td>
+          <td>All</td>
+          <td class="status-active">Active</td>
+          <td><button class="action-btn view">View</button></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ROLES -->
+  <div class="section" style="display:flex; justify-content:space-between; align-items:center;">
+    <h3 style="margin:0;">Roles</h3>
+    <button class="btn-primary" onclick="openPermissionModal()">+ Add Role</button>
+  </div>
+
+  <div class="section">
+    <table>
+      <thead>
+        <tr>
+          <th>Role Name</th>
+          <th>Description</th>
+          <th>Permissions</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Admin</td>
+          <td>Full system access</td>
+          <td>All permissions</td>
+          <td><button class="action-btn view">View</button></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="footer">© 2025 Salon Booking Platform</div>
+</div>
+
+<!-- ================= ADD USER MODAL ================= -->
+<div class="modal-overlay" id="userModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Create New User</h3>
+      <span class="close-btn" onclick="closeUserModal()">×</span>
+    </div>
+
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Full Name</label>
+        <input type="text">
+      </div>
+
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email">
+      </div>
+
+      <div class="form-group">
+        <label>Role</label>
+        <select>
+          <option>Admin</option>
+          <option>Manager</option>
+          <option>Staff</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Assigned Salon</label>
+        <select>
+          <option>All Salons</option>
+          <option>Glow Salon</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeUserModal()">Cancel</button>
+      <button class="btn-primary">Save User</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= PERMISSION MODAL ================= -->
+<div class="modal-overlay" id="permissionModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Assign Permissions</h3>
+      <span class="close-btn" onclick="closePermissionModal()">×</span>
+    </div>
+
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Select Role</label>
+        <select>
+          <option>Admin</option>
+          <option>Manager</option>
+          <option>Staff</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Permissions</label>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+          <label><input type="checkbox"> Manage Salons</label>
+          <label><input type="checkbox"> Manage Users</label>
+          <label><input type="checkbox"> View Reports</label>
+          <label><input type="checkbox"> Audit Logs</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closePermissionModal()">Cancel</button>
+      <button class="btn-primary">Save Permissions</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= SCRIPTS ================= -->
+<script>
+  function toggleSidebar() {
+    sidebar.classList.toggle("collapsed");
+    mainContent.classList.toggle("collapsed");
+    topHeader.classList.toggle("collapsed");
+  }
+
+  function openUserModal() {
+    userModal.classList.add("active");
+  }
+
+  function closeUserModal() {
+    userModal.classList.remove("active");
+  }
+
+  function openPermissionModal() {
+    permissionModal.classList.add("active");
+  }
+
+  function closePermissionModal() {
+    permissionModal.classList.remove("active");
+  }
+</script>
+<script>
+    // 1. Toggle the menu visibility
+    function toggleProfileMenu() {
+        const menu = document.getElementById('profileDropdown');
+        menu.classList.toggle('active');
+    }
+
+    // 2. Close menu if clicking OUTSIDE of it
+    window.addEventListener('click', function(e) {
+        const wrapper = document.querySelector('.profile-wrapper');
+        const menu = document.getElementById('profileDropdown');
+        
+        // If click is NOT inside the wrapper, close the menu
+        if (!wrapper.contains(e.target)) {
+            menu.classList.remove('active');
+        }
+    });
+
+    // 3. Main Function to Load User Data
+    async function loadUserInfo() {
+        try {
+            // NOTE: Ensure this matches your backend route! 
+            // We previously created '/api/current-user'. If you used '/api/me', change it here.
+            const response = await fetch('/api/me'); 
+            
+            if (response.status === 401) {
+                // Session expired or not logged in
+                window.location.href = '/admin/login'; // Redirect to login
+                return;
+            }
+
+            if (!response.ok) throw new Error("Failed to fetch user");
+
+            const user = await response.json();
+            const nameEl = document.getElementById('navUserName');
+            const roleEl = document.getElementById('navUserRole');
+            
+            if (nameEl) nameEl.textContent = user.name;
+            if (roleEl) roleEl.textContent = user.role.toUpperCase();
+            
+            // --- B. Update Avatar ---
+            const avatarEl = document.getElementById('navUserAvatar');
+            if (avatarEl && user.name) {
+                const initial = user.name.charAt(0).toUpperCase();
+                avatarEl.textContent = initial;
+            }
+
+        } catch (error) {
+            console.error("Error loading user info:", error);
+        }
+    }
+
+    // 4. CRITICAL FIX: Actually run the function when page loads!
+    document.addEventListener('DOMContentLoaded', loadUserInfo);
+
+    // 5. Logout Function
+    async function handleLogout() {
+        if (!confirm("Are you sure you want to logout?")) return;
+        try {
+            // Ensure this route matches your backend logout route
+            const response = await fetch('/logout', { method: 'POST' });
+            if (response.ok) {
+                window.location.href = '/admin/login';
+            } else {
+                alert("Logout failed");
+            }
+        } catch (err) {
+            console.error(err);
+        }
+    }
+</script>
+
+<style> .btn-primary { background:#1abc9c; border:none; padding:10px 16px; color:#fff; border-radius:6px; cursor:pointer; font-size:14px; } .action-btn { padding: 6px 10px; border-radius: 4px; border: none; font-size: 12px; cursor: pointer; margin-right: 4px; } .action-btn.view { background: #3498db; color: #fff; } .action-btn.edit { background: #f39c12; color: #fff; } .action-btn.disable { background: #e74c3c; color: #fff; } .action-btn.enable { background: #2ecc71; color: #fff; } </style>
+</body>
+</html>

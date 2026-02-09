@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Appointments</title>    
+    <link rel="stylesheet" type="text/css" href="../css/style_hyp.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    
+</head>
+<body class="dashboard">
+    <header>
+    <div class="header-left">
+        <button class="hamburger" id="hamburgerBtn">&#9776;</button>
+        <h1>Dashboard</h1>
+    </div>
+    
+    <div class="header-right">
+        <div class="search-bar">
+            <input type="text" placeholder="Search salons or services..." />
+        </div>
+        <div class="profile-bubble" id="profileBubble">
+            <img src="" alt="User Avatar" />
+            <span id="profileName"></span>
+        </div>
+    </div>
+
+    <div id="profileMenuPopup" class="profile-menu-popup" aria-hidden="true">
+    <div class="menu-item">
+        <a href="/customer/c_profile.html"><i class="fas fa-user"></i> My Profile</a>
+    </div>
+    <div class="menu-item">
+        <a href="/customer/c_myappointments.html"><i class="fas fa-calendar-alt"></i> My Bookings</a>
+    </div>
+    <hr>
+    <div class="menu-item">
+        <a href="/customer/c_login.html"><i class="fas fa-sign-out-alt"></i> Logout</a>
+    </div>
+    </div>
+    </header>
+    <div class="container">
+        <aside class="sidebar">
+                <ul>
+                <li>
+                <a href="/customer/c_dashboard.html">Dashboard</a>
+                </li>
+
+                <li class="active">
+                <a href="/customer/c_myappointments.html">My Appointments</a>
+                </li>
+
+                <li>
+                <a href="/customer/c_salon.html">Nearby Salons</a>
+                </li>
+
+                <li>
+                <a href="/customer/productandoffers.html">Offers & Packages</a>
+                </li>
+
+                <li>
+                <a href="/customer/c_profile.html">Profile</a>
+                </li>
+
+                <li>
+                <a href="/customer/c_login.html">Logout</a>
+                </li>
+            </ul>
+        </aside>
+    <main class="main">
+
+
+        <!--<div class="section-header">
+        
+        <h2 class="section-title mb-0">My Appointments</h2>
+        
+        <a href="/customer/booking.html" class="btn btn-primary">
+            <i class="fas fa-calendar-plus me-2"></i> Book New Appointment
+        </a>
+    </div> -->
+
+     <div class="appointments-section">
+    
+    <div class="appointments-header">
+        <h2 class="section-title">My Appointments</h2>
+        
+        <a href="/customer/booking.html" class="btn-book-new">
+            <i class="fas fa-calendar-plus"></i> Book New Appointment
+        </a>
+    </div>   
+    <div class="appointment" id="appointmentList"></div>
+    <div id="pagination-controls" style="margin-top: 20px; text-align: center;">
+    </div>
+    <div id="rescheduleModal" class="appointmentmodal-backdrop" style="display:none;">
+    <div class="reschedule-modal">
+        
+        <div class="appointmentmodal-header">
+            <h5 class="appointmentmodal-title">Reschedule Appointment</h5>
+            <button type="button" class="btn-close-icon" onclick="closeRescheduleModal()">&times;</button>
+        </div>
+
+        <div class="appointmentmodal-body">
+            <input type="hidden" id="rescheduleApptId">
+            
+            <p class="text-muted">Select a new date to see available times.</p>
+
+            <div class="form-group">
+                <label for="newDate">Select New Date</label>
+                <input type="date" id="newDate" class="styled-input" required onchange="fetchAvailableSlots()">
+            </div>
+
+            <div class="form-group">
+                <label>Available Time Slots</label>
+                <div id="timeSlotsContainer" class="time-slot-picker">
+                    <span class="empty-msg">Select a date first</span>
+                </div>
+            </div>
+
+            <input type="hidden" id="selectedNewTime" required>
+            
+            <p id="rescheduleMessage" class="status-msg"></p>
+        </div>
+
+        <div class="appointmentmodal-footer">
+            <button class="btn-secondary" onclick="closeRescheduleModal()">Cancel</button>
+            <button class="btn-primary" onclick="submitReschedule()">Confirm Reschedule</button>
+        </div>
+
+    </div>
+</div>
+
+</div>
+
+</div>
+    </main>
+     <script src="../js/c_myappointments.js"></script>
+     <script src="../js/script.js"></script>
+      <script src="../js/c_header.js"></script>
+      
+      <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+</body>
+</html>

@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+ <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <title>Nearby Salons | Customer Portal</title>
+ <link rel="stylesheet" type="text/css" href="../css/style_hyp.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    
+</head>
+<body class="dashboard">
+ <header>
+    <div class="header-left">
+        <button class="hamburger" id="hamburgerBtn">&#9776;</button>
+        <h1>Dashboard</h1>
+    </div>
+    
+    <div class="header-right">
+        <div class="search-bar">
+            <input type="text" placeholder="Search salons or services..." />
+        </div>
+        <div class="profile-bubble" id="profileBubble">
+            <img src="" alt="User Avatar" />
+            <span id="profileName"></span>
+        </div>
+    </div>
+
+    <div id="profileMenuPopup" class="profile-menu-popup" aria-hidden="true">
+    <div class="menu-item">
+        <a href="/customer/c_profile.html"><i class="fas fa-user"></i> My Profile</a>
+    </div>
+    <div class="menu-item">
+        <a href="/customer/c_myappointments.html"><i class="fas fa-calendar-alt"></i> My Bookings</a>
+    </div>
+    <hr>
+    <div class="menu-item">
+        <a href="/customer/c_login.html"><i class="fas fa-sign-out-alt"></i> Logout</a>
+    </div>
+</div>
+</header>
+    <div class="container">
+    <aside class="sidebar">
+                <ul>
+                <li>
+                <a href="/customer/c_dashboard.html">Dashboard</a>
+                </li>
+                <li>
+                <a href="/customer/c_myappointments.html">My Appointments</a>
+                </li>
+
+                <li class="active">
+                <a href="/customer/c_salon.html">Nearby Salons</a>
+                </li>
+                <li>
+                <a href="/customer/productandoffers.html">Offers & Packages</a>
+                </li>
+
+                <li>
+                <a href="/customer/c_profile.html">Profile</a>
+                </li>
+                <li>
+                <a href="/logout">Logout</a>
+                </li>
+            </ul>
+        </aside>
+
+    <main class="main">
+        <h1>Nearby Salons</h1>
+        <div class="card-container" id="salonList">
+        </div>
+    </main>
+    </div>
+
+    <div class="salonmodal-backdrop" id="salonDetailsModal" tabindex="-1" aria-labelledby="salonDetailsModalLabel" aria-hidden="true">
+        <div class="modal-dialog salon-modal">
+            <div class="salonmodal-content">
+                <div class="salonmodal-header">
+                    <h5 class="salonmodal-title" id="salonDetailsModalLabel">Salon Details</h5>
+                    <button type="button" class="btn-close custom-close-btn" onclick="closeModal()" aria-label="Close">&times;</button>
+                </div>
+                <div class="salonmodal-body" id="salonDetailsBody">
+                    <p id="salonNameDetail">Loading...</p>
+                    <p id="salonAddressDetail"></p>
+                    <p id="salonRatingDetail"></p>
+                    <p id="salonDescriptionDetail"></p>
+                    <div id="salonServicesList"></div>
+                </div>
+                <div class="salonmodal-footer">
+                    <a href="/customer/booking.html" id="bookServicesLink" class="btn btn-primary">Book Services Here</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../js/c_salon.js"></script>
+     <script src="../js/c_header.js"></script>
+    <script>
+    function closeModal() {
+    console.log("Close function triggered");
+    const modal = document.querySelector('.salonmodal-backdrop');
+    if (modal) {
+        modal.classList.remove('active');
+        modal.style.display = 'none';
+        // Optional: clear content if needed
+        // document.querySelector('.custom-modal').innerHTML = ''; 
+    }
+}
+    </script>
+</body>
+</html>

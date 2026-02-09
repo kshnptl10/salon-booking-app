@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Profile</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" type="text/css" href="../css/style_hyp.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+</head>
+<body class="dashboard">
+  
+  <header>
+    <div class="header-left">
+        <button class="hamburger" id="hamburgerBtn">&#9776;</button>
+        <h1>Dashboard</h1>
+    </div>
+    <div class="header-right">
+        <div class="search-bar">
+            <input type="text" placeholder="Search salons or services..." />
+        </div>
+        <div class="profile-bubble" id="profileBubble">
+            <img src="../images/avatar.png" alt="User Avatar" />
+            <span id="profileName"></span>
+        </div>
+    </div>
+
+    <div id="profileMenuPopup" class="profile-menu-popup" aria-hidden="true">
+    <div class="menu-item">
+        <a href="/customer/c_profile.html"><i class="fas fa-user"></i> My Profile</a>
+    </div>
+    <div class="menu-item">
+        <a href="/customer/c_myappointments.html"><i class="fas fa-calendar-alt"></i> My Bookings</a>
+    </div>
+    <hr>
+    <div class="menu-item">
+        <a href="/customer/c_login.html"><i class="fas fa-sign-out-alt"></i> Logout</a>
+    </div>
+</div>
+    </header>
+
+  <div class="container">
+    <aside class="sidebar">
+      <ul>
+        <li><a href="/customer/c_dashboard.html">Dashboard</a></li>
+        <li><a href="/customer/c_myappointments.html">My Appointments</a></li>
+        <li><a href="/customer/c_salon.html">Nearby Salons</a></li>
+        <li><a href="/customer/productandoffers.html">Offers & Packages</a></li>
+        <li class="active"><a href="/customer/c_profile.html">Profile</a></li>
+        <li><a href="/customer/c_login.html">Logout</a></li>
+      </ul>
+    </aside>
+
+    <main class="main">
+      <div class="" id="profileCard">
+        
+        <div class="card-header">
+            <div class="avatar-container">
+            <img src="../images/avatar.png" alt="Profile" class="avatar" id="avatarPreview">
+        </div>
+        <h3 id="headerName">User Profile</h3>
+            </div>
+            <h3 id="headerName">User Profile</h3>
+        </div>
+
+        <form class="card-body" id="profileForm">
+            <div class="form-row">
+                <label>Full Name</label>
+                <input type="text" id="fullName" value="John Doe" disabled>
+            </div>
+            <div class="form-row">
+                <label>Email</label>
+                <input type="email" id="email" value="john@example.com" disabled>
+            </div>
+            <div class="form-row">
+                <label>Phone Number</label>
+                <input type="text" id="phone" value="+91 98765 43210" disabled>
+            </div>
+
+            <div class="form-row">
+                <label>Gender</label>
+                <select id="gender" disabled>
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                    <option value="other">Other</option>
+                </select>
+            </div>
+            <div class="form-row">
+                <label>Date of Birth</label>
+                <input type="date" id="dateOfBirth" value="1990-01-01" disabled>
+            </div>
+            <div class="form-row">
+                <label>City</label>
+                <input type="text" id="city" value="Vadodara" disabled>
+            </div>
+            <div class="form-row">
+                <label>Address</label>
+                <textarea id="address" rows="2" disabled>123, Alkapuri Society</textarea>
+            </div>
+        </form>
+
+        <div class="card-footer">
+            <button type="button" id="btnEdit" class="btn btn-primary" onclick="toggleEdit(true)">Edit Profile</button>
+            <button type="button" id="btnSave" class="btn btn-save hidden" onclick="saveData()">Save Changes</button>
+            <button type="button" id="btnCancel" class="btn btn-cancel hidden" onclick="toggleEdit(false)">Cancel</button>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <footer>© 2025 BeautyCare | Self-care made simple 💙</footer>
+
+  <script src="../js/c_profile.js"></script>
+
+</body>
+</html>

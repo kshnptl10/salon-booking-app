@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <link rel="apple-touch-icon" sizes="76x76" href="../images/apple-icon.png">
+  <title>
+    Booked Appointments
+  </title>
+  <!--     Fonts and icons     -->
+  <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Inter:300,400,500,600,700,900" />
+  <!-- Nucleo Icons -->
+  <link href="../css/nucleo-icons.css" rel="stylesheet" />
+  <link href="../css/nucleo-svg.css" rel="stylesheet" />
+  
+  <link href="../css/profileicon.css" rel="stylesheet" />
+  <!-- Font Awesome Icons -->
+  <!-- Material Icons -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
+  <!-- CSS Files -->
+  <link id="pagestyle" href="../css/material-dashboard.css?v=3.2.0" rel="stylesheet" />
+</head>
+
+<body class="g-sidenav-show  bg-gray-100">
+  <aside class="sidenav navbar navbar-vertical navbar-expand-xs border-radius-lg fixed-start ms-2  bg-white my-2" id="sidenav-main">
+    <div class="sidenav-header">
+      <i class="fas fa-times p-3 cursor-pointer text-dark opacity-5 position-absolute end-0 top-0 d-none d-xl-none" aria-hidden="true" id="iconSidenav"></i>
+      <a class="navbar-brand px-4 py-3 m-0"  target="_blank">
+        <img src="../images/logo-ct-dark.png" class="navbar-brand-img" width="26" height="26" alt="main_logo">
+        <span class="ms-1 text-sm text-dark">Welcome,  <strong id="profileName">Admin</strong></span>
+      </a>
+    </div>
+    <hr class="horizontal dark mt-0 mb-2">
+    <div class="collapse navbar-collapse  w-auto " id="sidenav-collapse-main">
+      <ul class="navbar-nav">
+        <li class="nav-item">
+          <a class="nav-link text-dark" href="../dashboard.html">
+            <i class="material-symbols-rounded opacity-5">dashboard</i>
+            <span class="nav-link-text ms-1">Dashboard</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link text-dark" href="../manager/staff.html">
+            <i class="material-symbols-rounded opacity-5">table_view</i>
+            <span class="nav-link-text ms-1">Staff</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link text-dark" href="../manager/services.html">
+            <i class="material-symbols-rounded opacity-5">receipt_long</i>
+            <span class="nav-link-text ms-1">Services</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link text-dark" href="../manager/timeslots.html">
+            <i class="material-symbols-rounded opacity-5">view_in_ar</i>
+            <span class="nav-link-text ms-1">Manage Booking Time slots</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link active bg-gradient-dark text-white" href="../manager/appointments.html">
+            <i class="material-symbols-rounded opacity-5">format_textdirection_r_to_l</i>
+            <span class="nav-link-text ms-1">Appointments</span>
+          </a>
+        </li>
+        <li class="nav-item mt-3">
+          <h6 class="ps-4 ms-2 text-uppercase text-xs text-dark font-weight-bolder opacity-5">Account pages</h6>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link text-dark" href="../manager/profile.html">
+            <i class="material-symbols-rounded opacity-5">person</i>
+            <span class="nav-link-text ms-1">Profile</span>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </aside>
+  <main class="main-content position-relative max-height-vh-100 h-100 border-radius-lg ">
+    <!-- Navbar -->
+    <nav class="navbar navbar-main navbar-expand-lg px-0 mx-3 shadow-none border-radius-xl" id="navbarBlur" data-scroll="true">
+      <div class="container-fluid py-1 px-3">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb bg-transparent mb-0 pb-0 pt-1 px-0 me-sm-6 me-5">
+            <li class="breadcrumb-item text-sm"><a class="opacity-5 text-dark" href="javascript:;">Pages</a></li>
+            <li class="breadcrumb-item text-sm text-dark active" aria-current="page">Appointments</li>
+          </ol>
+        </nav>
+        <div class="collapse navbar-collapse mt-sm-0 mt-2 me-md-0 me-sm-4" id="navbar">
+          <div class="ms-md-auto pe-md-3 d-flex align-items-center">
+          </div>
+          <ul class="navbar-nav d-flex align-items-center justify-content-end">
+            <!-- PROFILE (replace previous icon block) -->
+              <li class="nav-item d-flex align-items-center position-relative" style="list-style:none;">
+                <div id="profileIcon" class="nav-link text-body font-weight-bold px-0" style="cursor:pointer;" aria-haspopup="true" aria-expanded="false" title="Account">
+                  <div id="headerAvatar" class="avatar-circle avatar-small" aria-hidden="true">
+                    <span id="headerInitials">U</span>
+                    <img id="headerAvatarImg" src="" alt="avatar" style="display:none;">
+                  </div>
+                </div>
+
+                <div id="profilePopup" class="profile-popup" role="dialog" aria-label="User menu" aria-hidden="true">
+                  <div class="popup-row">
+                    <div class="avatar-circle avatar-large" id="popupAvatarWrap">
+                      <span id="popupInitials">U</span>
+                      <img id="popupAvatarImg" src="" alt="avatar" style="display:none;">
+                    </div>
+                    <div class="popup-userinfo">
+                      <p id="popupUserName" class="m-0 fw-bold">User</p>
+                      <p id="popupUserRole" class="m-0 text-secondary" style="font-size:12px;">Role</p>
+                    </div>
+                  </div>
+
+                  <hr style="margin:8px 0;">
+
+                  <a href="/manager/profile.html" class="d-block mb-2">My Profile</a>
+                  <a href="/logout" class="logout-item">Logout</a>
+                </div>
+              </li>
+            <!-- END PROFILE -->
+          </ul>
+        </div>
+      </div>
+    </nav>
+    <!-- End Navbar -->
+    <div class="container-fluid py-2">
+      
+      <div class="row">
+        <div class="col-12">
+          <div class="d-flex align-items-center justify-content-between">
+            <h4>Services</h4>
+          </div>
+            <div class="card-body px-0 pb-2">
+              <div class="table-responsive p-0">
+                <table class="table align-items-center justify-content-center mb-0" id="appointments-table">
+                  <thead>
+                    <tr>
+                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Customer Name</th>
+                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Email</th>
+                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Service</th>
+                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Staff Member</th>
+                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Date</th>
+                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Time</th>
+                    </tr>
+                  </thead>
+                  <tbody id="appointments-table"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <footer class="footer py-4  ">
+        <div class="container-fluid">
+          <div class="row align-items-center justify-content-lg-between">
+            <div class="col-lg-6 mb-lg-0 mb-4">
+              <div class="copyright text-center text-sm text-muted text-lg-start">
+                © <script>
+                  document.write(new Date().getFullYear())
+                </script>,
+                made with <i class="fa fa-heart"></i> by
+                <a href="https://www.creative-tim.com" class="font-weight-bold" target="_blank">Creative Tim</a>
+                for a better web.
+              </div>
+            </div>
+            <div class="col-lg-6">
+              <ul class="nav nav-footer justify-content-center justify-content-lg-end">
+                <li class="nav-item">
+                  <a href="https://www.creative-tim.com" class="nav-link text-muted" target="_blank">Creative Tim</a>
+                </li>
+                <li class="nav-item">
+                  <a href="https://www.creative-tim.com/presentation" class="nav-link text-muted" target="_blank">About Us</a>
+                </li>
+                <li class="nav-item">
+                  <a href="https://www.creative-tim.com/blog" class="nav-link text-muted" target="_blank">Blog</a>
+                </li>
+                <li class="nav-item">
+                  <a href="https://www.creative-tim.com/license" class="nav-link pe-0 text-muted" target="_blank">License</a>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </footer>
+    </div>
+  </main>
+  <!--   Core JS Files   -->
+  <script src="../js/core/popper.min.js"></script>
+  <script src="../js/core/bootstrap.min.js"></script>
+  <script src="../js/plugins/perfect-scrollbar.min.js"></script>
+  <script src="../js/plugins/smooth-scrollbar.min.js"></script>
+  <script src="/js/appointments.js"></script>
+  <script>
+    var win = navigator.platform.indexOf('Win') > -1;
+    if (win && document.querySelector('#sidenav-scrollbar')) {
+      var options = {
+        damping: '0.5'
+      }
+      Scrollbar.init(document.querySelector('#sidenav-scrollbar'), options);
+    }
+  </script>
+    <script> document.addEventListener('DOMContentLoaded', () => {
+  console.log('Profile popup script loaded');
+
+  const icon = document.getElementById('profileIcon');
+  const popup = document.getElementById('profilePopup');
+
+  if (!icon) return console.error('profileIcon element not found');
+  if (!popup) return console.error('profilePopup element not found');
+
+  // helper to set popup open state
+  function setOpen(open) {
+    if (open) {
+      popup.classList.add('open');
+      popup.setAttribute('aria-hidden', 'false');
+      icon.setAttribute('aria-expanded', 'true');
+    } else {
+      popup.classList.remove('open');
+      popup.setAttribute('aria-hidden', 'true');
+      icon.setAttribute('aria-expanded', 'false');
+    }
+  }
+
+  // toggle on click
+  icon.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const willOpen = !popup.classList.contains('open');
+    console.log('Profile icon clicked — toggling popup. Will open?', willOpen);
+    setOpen(willOpen);
+  });
+
+  // close on outside click
+  document.addEventListener('click', (e) => {
+    if (!popup.classList.contains('open')) return;
+    // if click inside popup, do nothing
+    if (popup.contains(e.target) || icon.contains(e.target)) return;
+    console.log('Click outside detected — closing profile popup');
+    setOpen(false);
+  });
+
+  // close on ESC
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && popup.classList.contains('open')) {
+      console.log('ESC pressed — closing profile popup');
+      setOpen(false);
+    }
+  });
+
+  // Defensive: log pointer-events style
+  console.log('profilePopup computed pointer-events:', getComputedStyle(popup).pointerEvents);
+
+  // Load logged user info (defensive; failure doesn't block popup)
+  (async function loadMe() {
+    try {
+      const res = await fetch('/api/me', { credentials: 'same-origin' });
+      if (!res.ok) {
+        console.warn('/api/me returned', res.status, await res.text());
+        return;
+      }
+      const user = await res.json();
+      // initials & avatar
+      const initials = (user.name || user.username || 'U').split(' ').map(p=>p[0]).slice(0,2).join('').toUpperCase();
+      document.getElementById('headerInitials').textContent = initials;
+      document.getElementById('popupInitials').textContent = initials;
+
+      document.getElementById('popupUserName').textContent = user.name || user.username || 'User';
+      document.getElementById('popupUserRole').textContent = user.role || user.role_name || '';
+
+      if (user.avatar_url) {
+        const ha = document.getElementById('headerAvatarImg');
+        const pa = document.getElementById('popupAvatarImg');
+        ha.src = user.avatar_url; pa.src = user.avatar_url;
+        ha.style.display = 'block'; pa.style.display = 'block';
+        document.getElementById('headerInitials').style.display = 'none';
+        document.getElementById('popupInitials').style.display = 'none';
+      }
+    } catch (err) {
+      console.warn('Failed to load /api/me:', err);
+    }
+  })();
+});
+</script>
+  <!-- Github buttons -->
+  <script async defer src="https://buttons.github.io/buttons.js"></script>
+  <!-- Control Center for Material Dashboard: parallax effects, scripts for the example pages etc -->
+  <script src="../js/material-dashboard.min.js?v=3.2.0"></script>
+</body>
+
+</html>

@@ -1,0 +1,184 @@
+
+/* Login */
+/* =======================
+   GLOBAL
+======================= */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: "Inter", "Segoe UI", sans-serif;
+
+  background:
+    linear-gradient(
+      rgba(15,23,42,0.75),
+      rgba(15,23,42,0.75)
+    ),
+    url("../images/salon-tools.jpg") center / cover no-repeat;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+}
+
+/* =======================
+   CONTAINER
+======================= */
+.auth-container {
+  width: 420px;
+  background: #111827;
+  padding: 40px;
+  border-radius: 20px;
+  box-shadow: 0 40px 80px rgba(0,0,0,0.6);
+}
+
+/* =======================
+   HEADINGS
+======================= */
+.small-title {
+  font-size: 12px;
+  letter-spacing: 1px;
+  color: #94a3b8;
+  text-transform: uppercase;
+}
+
+.auth-container h1 {
+  margin: 10px 0 8px;
+  font-size: 32px;
+  font-weight: 700;
+}
+
+.auth-container h1 span {
+  color: #38bdf8;
+}
+
+.subtitle {
+  font-size: 14px;
+  color: #94a3b8;
+  margin-bottom: 28px;
+}
+
+.subtitle a {
+  color: #38bdf8;
+  text-decoration: none;
+}
+
+/* =======================
+   INPUT GROUP
+======================= */
+.input-group {
+  position: relative;
+  margin-bottom: 18px;
+}
+
+.input-group input {
+  width: 100%;
+  padding: 14px 42px 14px 14px;
+  border-radius: 14px;
+  border: 1px solid #1f2937;
+  background: #1f2937;
+  color: #fff;
+  font-size: 14px;
+  outline: none;
+  transition: 0.3s;
+}
+
+.input-group input::placeholder {
+  color: #64748b;
+}
+
+.input-group input:focus {
+  border-color: #38bdf8;
+  box-shadow: 0 0 0 2px rgba(56,189,248,0.25);
+}
+
+.input-icon {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+/* =======================
+   OPTIONS
+======================= */
+.options {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  color: #94a3b8;
+  margin-top: 8px;
+}
+
+.options a {
+  color: #38bdf8;
+  text-decoration: none;
+}
+
+/* =======================
+   BUTTONS
+======================= */
+.button-row {
+  display: flex;
+  gap: 14px;
+  margin-top: 26px;
+}
+
+.btn-secondary {
+  flex: 1;
+  padding: 14px;
+  border-radius: 999px;
+  background: #1f2937;
+  border: none;
+  color: #cbd5f5;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.btn-primary {
+  flex: 1;
+  padding: 14px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #38bdf8, #0ea5e9);
+  border: none;
+  color: #020617;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 25px rgba(56,189,248,0.4);
+}
+
+/* =======================
+   FOOTER
+======================= */
+.footer {
+  text-align: center;
+  margin-top: 28px;
+  font-size: 12px;
+  color: #64748b;
+}
+.auth-container {
+  transition: 
+    transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
+    box-shadow 0.4s ease;
+}
+
+.auth-container:hover {
+  transform: perspective(800px) translateY(-8px) rotateX(1.5deg);
+  box-shadow:
+    0 35px 90px rgba(0,0,0,0.3),
+    0 20px 40px rgba(56,189,248,0.25);
+}
