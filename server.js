@@ -1,4 +1,7 @@
 // server.js
+if (process.env.NODE_ENV !== 'production') {
+    require('dotenv').config();
+}
 const express = require('express');
 const bodyParser = require('body-parser');
 const session = require('express-session');
@@ -95,6 +98,7 @@ app.use((err, req, res, next) => {
     console.error(err.stack);
     res.status(500).json({ success: false, message: 'Something went wrong on the server!' });
 });
+
 
 // --- 9. Start Server ---
 app.listen(PORT, () => {
