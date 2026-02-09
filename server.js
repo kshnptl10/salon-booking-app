@@ -35,6 +35,21 @@ app.use((req, res, next) => {
 });
 
 // --- 2. Session Configuration ---
+app.set('trust proxy', 1); 
+
+app.use(session({
+    secret: process.env.SESSION_SECRET || 'fallback_secret',
+    resave: false,
+    saveUninitialized: false, // Changed to false (Better for login logic)
+    cookie: {
+        // secure: true -> Only works on HTTPS (Production)
+        // secure: false -> Works on HTTP (Localhost)
+        secure: process.env.NODE_ENV === 'production', 
+        httpOnly: true,
+        maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    }
+}));
+
 app.use(session({
     secret: process.env.SESSION_SECRET || 'your_strong_secret_key_here',
     resave: false,
