@@ -214,14 +214,14 @@ exports.signupCustomer = async (req, res) => {
 
 exports.loginCustomer = async (req, res) => {
     const { email, password } = req.body;
-
+    
+    const isApiRequest = req.headers.accept === 'application/json';
+    
     try {
         const result = await pool.query('SELECT id, password, name FROM customers WHERE email = $1', [email]);
 
         if (result.rows.length === 0) {
-            if (req.headers.accept === 'application/json') {
-                return res.status(401).json({ message: "Invalid email or password" });
-            }
+            if (isApiRequest) return res.status(401).json({ message: "Invalid credentials" });
             return res.send('Invalid email or password. <a href="/c_login">Go Back</a>');
         }
 
@@ -230,9 +230,7 @@ exports.loginCustomer = async (req, res) => {
 
         if (!match) {
 
-            if (req.headers.accept === 'application/json') {
-                return res.status(401).json({ message: "Invalid email or password" });
-            }
+            if (isApiRequest) return res.status(401).json({ message: "Invalid credentials" });
             return res.send('Invalid email or password. <a href="/c_login">Go Back</a>');
         }
 
@@ -241,18 +239,19 @@ exports.loginCustomer = async (req, res) => {
         req.session.userName = customer.name || '';
         req.session.userRole = 'customer';
 
-        if (req.headers.accept === 'application/json') {
+      if (isApiRequest) {
+            // ✅ Send JSON for Android
             return res.status(200).json({ 
                 success: true, 
-                message: "Login successful",
-                user: { id: customer.id, name: customer.name }
+                user: { id: customer.id, name: customer.name } 
             });
         }
-        
+
         res.redirect('/c_dashboard');
 
     } catch (err) {
         console.error("Customer Login Error:", err);
+        if (isApiRequest) return res.status(500).json({ error: "Server error" });
         res.status(500).send('Error occurred during login.');
     }
 };
