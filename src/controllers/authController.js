@@ -215,7 +215,7 @@ exports.signupCustomer = async (req, res) => {
 exports.loginCustomer = async (req, res) => {
     const { email, password } = req.body;
     
-    const isApiRequest = req.headers.accept === 'application/json';
+    const isApiRequest = req.headers.accept === 'application/json'|| req.headers['content-type'] === 'application/json';
     
     try {
         const result = await pool.query('SELECT id, password, name FROM customers WHERE email = $1', [email]);
