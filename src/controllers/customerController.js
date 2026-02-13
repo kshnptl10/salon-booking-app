@@ -30,6 +30,9 @@ exports.getSalons = async (req, res) => {
                 )
             ORDER BY S.city ASC, S.salon_name ASC 
         `);
+        if (req.headers.accept === 'application/json' || req.query.format === 'json') {
+            return res.json(result.rows);
+        }
         res.json(result.rows);
     } catch (err) {
         console.error("Error fetching salons:", err.message);
@@ -118,6 +121,9 @@ exports.getCustomerAppointments = async (req, res) => {
 
     // 1. Check Session
     if (!customerId) {
+        if (req.headers.accept === 'application/json') {
+            return res.status(401).json({ error: "Unauthorized. Please provide customerId." });
+        }
         return res.status(401).json({ success: false, message: "Unauthorized" });
     }
 
