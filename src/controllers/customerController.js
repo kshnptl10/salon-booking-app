@@ -114,11 +114,12 @@ exports.getServicesBySalon = async (req, res) => {
 
 exports.getCustomerAppointments = async (req, res) => {
     
+    const customerId = req.session.userId || req.query.userId || req.headers['user-id'];
+
     // 1. Check Session
-    if (!req.session.userId) {
+    if (!customerId) {
         return res.status(401).json({ success: false, message: "Unauthorized" });
     }
-    const customerId = req.session.userId;
 
     // 2. Setup Query Vars
     const page = parseInt(req.query.page) || 1;
