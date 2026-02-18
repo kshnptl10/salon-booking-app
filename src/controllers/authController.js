@@ -337,8 +337,8 @@ exports.updateProfile = async (req, res) => {
 exports.getCustomerProfile = async (req, res) => {
     try {
         // 🚀 Fix: Accept userId from session OR query string
-        const userId = req.session.userId || req.query.userId;
-        
+    
+        const userId = req.authenticatedUserId || req.session.userId || req.query.userId;         
         if (!userId) {
             return res.status(401).json({ success: false, message: "Unauthorized - No ID provided" });
         }

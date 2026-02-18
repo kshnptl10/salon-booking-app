@@ -9,27 +9,58 @@ const requireAuth = (req, res, next) => {
     next();
 };
 
+// const checkAuthentication = (req, res, next) => {
+//     // Check if user session exists and has a userId
+//     if (!req.session || !req.session.userId) {
+//         // If not logged in, redirect them to the sign-in page
+//         return res.redirect('/login');    
+//     }
+
+//     const role = req.session.userRole;
+
+//     // 1. Allow Admin, Superadmin, AND Manager
+//     if (role === 'admin' || role === 'superadmin' || role === 'manager') {
+//         return next(); // Authorized: Proceed to dashboard
+//     } 
+    
+//     // 2. Redirect Customers back to their own area
+//     if (role === 'customer') {
+//         return res.redirect('/c_dashboard'); 
+//     }
+    
+//     // 3. Default denial for other invalid roles
+//     return res.status(403).send('Access Denied: You must be an Administrator or Manager.');
+// };
+
 const checkAuthentication = (req, res, next) => {
-    // Check if user session exists and has a userId
-    if (!req.session || !req.session.userId) {
-        // If not logged in, redirect them to the sign-in page
-        return res.redirect('/login');    
+    // 🌐 Web Logic: Check for session
+    const sessionUserId = req.session && req.session.userId;
+    
+    // 📱 Mobile Logic: Check for userId in query or headers
+    const mobileUserId = req.query.userId || req.headers['user-id'];
+
+    // 🔑 Combined Check
+    const activeUserId = sessionUserId || mobileUserId;
+
+    if (!activeUserId) {
+        // If it's a mobile request (expecting JSON), return JSON error
+        if (req.query.userId || req.headers['user-id'] || req.headers.accept === 'application/json') {
+            return res.status(401).json({ error: "Authentication required." });
+        }
+        // Otherwise, keep your existing web redirect
+        return res.redirect('/login');
     }
 
-    const role = req.session.userRole;
+    // Role Logic (preserving your web logic)
+    const role = req.session?.userRole || req.query.role || 'customer';
 
-    // 1. Allow Admin, Superadmin, AND Manager
-    if (role === 'admin' || role === 'superadmin' || role === 'manager') {
-        return next(); // Authorized: Proceed to dashboard
+    if (role === 'admin' || role === 'superadmin' || role === 'manager' || role === 'customer') {
+        // Attach the ID to the request object so the controller can use it easily
+        req.authenticatedUserId = activeUserId;
+        return next();
     } 
     
-    // 2. Redirect Customers back to their own area
-    if (role === 'customer') {
-        return res.redirect('/c_dashboard'); 
-    }
-    
-    // 3. Default denial for other invalid roles
-    return res.status(403).send('Access Denied: You must be an Administrator or Manager.');
+    return res.status(403).send('Access Denied');
 };
 
 /**
