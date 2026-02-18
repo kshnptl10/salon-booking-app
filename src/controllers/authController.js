@@ -278,7 +278,8 @@ exports.getMe = (req, res) => {
 // Admin Profile
 exports.getProfile = async (req, res) => {
     try {
-        const userId = req.session.userId;
+        const userId = req.session.userId || req.query.userId;
+        
         if (!userId) return res.status(401).send("Unauthorized");
 
         const result = await pool.query(
