@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     try {
         // 2. Fetch User Data
-        const response = await fetch('/api/customerprofile');
+        const response = await fetch('/customerprofile');
         if (!response.ok) return; // Stop if not logged in
         
         const data = await response.json();

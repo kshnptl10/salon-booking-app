@@ -75,7 +75,7 @@ function updateAvatarDisplay(genderValue) {
 async function loadProfileData() {
     try {
         // Replace with your actual API endpoint
-        const response = await fetch('/api/customerprofile'); 
+        const response = await fetch('/customerprofile'); 
         
         if (!response.ok) throw new Error('Failed to load profile');
         const data = await response.json();
