@@ -279,7 +279,7 @@ exports.getMe = (req, res) => {
 exports.getProfile = async (req, res) => {
     try {
         const userId = req.session.userId || req.query.userId;
-        
+
         if (!userId) return res.status(401).send("Unauthorized");
 
         const result = await pool.query(
@@ -315,17 +315,42 @@ exports.updateProfile = async (req, res) => {
 };
 
 // Customer Profile
+// exports.getCustomerProfile = async (req, res) => {
+//     try {
+//         const userId = req.session.userId;
+//         if (!userId) return res.status(401).send("Unauthorized");
+
+//         const result = await pool.query(
+//             "SELECT name, email, phone, gender, date_of_birth, address, city, avatar_url FROM customers WHERE id = $1",
+//             [userId]
+//         );
+
+//         if (result.rows.length === 0) return res.status(404).send("User not found");
+//         res.json(result.rows[0]);
+
+//     } catch (err) {
+//         console.error("Get Customer Profile Error:", err);
+//         res.status(500).send("Error fetching profile");
+//     }
+// };
+
 exports.getCustomerProfile = async (req, res) => {
     try {
-        const userId = req.session.userId;
-        if (!userId) return res.status(401).send("Unauthorized");
+        // 🚀 Fix: Accept userId from session OR query string
+        const userId = req.session.userId || req.query.userId;
+        
+        if (!userId) {
+            return res.status(401).json({ success: false, message: "Unauthorized - No ID provided" });
+        }
 
         const result = await pool.query(
-            "SELECT name, email, phone, gender, date_of_birth, address, city, avatar_url FROM customers WHERE id = $1",
+            "SELECT name, email, phone, gender, to_char(date_of_birth, 'YYYY-MM-DD') as date_of_birth, address, city, avatar_url FROM customers WHERE id = $1",
             [userId]
         );
 
         if (result.rows.length === 0) return res.status(404).send("User not found");
+        
+        // Return JSON
         res.json(result.rows[0]);
 
     } catch (err) {
