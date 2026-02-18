@@ -38,7 +38,7 @@ router.get('/api/me', requireAuth, authController.getMe);
 router.post('/api/me/avatar', requireAuth, authController.uploadAvatar);
 router.get('/get-profile', requireAuth, authController.getProfile);
 router.post('/update-profile', requireAuth, authController.updateProfile);
-router.get('/customerprofile', requireAuth, authController.getCustomerProfile);
+router.get('/api/customerprofile', requireAuth, authController.getCustomerProfile);
 router.put('/api/customerupdateprofile', requireAuth, authController.updateCustomerProfile);
 
 
