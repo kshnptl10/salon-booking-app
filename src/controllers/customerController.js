@@ -498,7 +498,11 @@ exports.getPendingReview = async (req, res) => {
              ORDER BY a.appointment_date DESC LIMIT 1`,
             [user_id]
         );
-        res.json(result.rows[0] || null);
+        if (result.rows.length > 0) {
+            res.json({ hasPending: true, appointment: result.rows[0] });
+        } else {
+            res.json({ hasPending: false });
+        }
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
