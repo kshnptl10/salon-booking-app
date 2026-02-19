@@ -475,9 +475,9 @@ exports.getSalonReviews = async (req, res) => {
     try {
         const { salon_id } = req.params;
         const result = await pool.query(
-            `SELECT r.*, u.name as customer_name 
+            `SELECT r.*, c.name as customer_name 
              FROM reviews r 
-             JOIN users u ON r.customer_id = u.id 
+             JOIN customers c ON r.customer_id = c.id 
              WHERE r.salon_id = $1 ORDER BY r.created_at DESC`,
             [salon_id]
         );
