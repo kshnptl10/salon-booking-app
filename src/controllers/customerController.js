@@ -442,7 +442,9 @@ exports.submitReview = async (req, res) => {
         if (appointmentCheck.rows.length === 0) {
             return res.status(403).json({ msg: "Unauthorized: You can only review your own appointments." });
         }
-
+        
+        console.log(`DEBUG DB INSERT: appt_id=${appointment_id}, salon=${salon_id}, cust_id=${user_id}`);
+        
         // 🚀 Insert Review
         const result = await pool.query(
             `INSERT INTO reviews (appointment_id, salon_id, customer_id, rating, comment)
