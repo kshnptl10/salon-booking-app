@@ -429,6 +429,46 @@ ORDER BY rs.slot_time ASC;
     }
 };
 
+exports.submitReview = async (req, res) => {
+    const { appointment_id, salon_id, user_id, rating, comment } = req.body;
+
+    // 🛡️ SDET Validation: Check if appointment is actually 'Completed'
+    try {
+        const appointmentCheck = await pool.query(
+            `SELECT status_id FROM appointments WHERE id = $1 AND customer_id = $2`,
+            [appointment_id, user_id]
+        );
+
+        if (appointmentCheck.rows.length === 0) {
+            return res.status(403).json({ msg: "Unauthorized: You can only review your own appointments." });
+        }
+
+        // 🚀 Insert Review
+        const result = await pool.query(
+            `INSERT INTO reviews (appointment_id, salon_id, customer_id, rating, comment)
+             VALUES ($1, $2, $3, $4, $5)
+             RETURNING id`,
+            [appointment_id, salon_id, user_id, rating, comment]
+        );
+
+        // 📈 Trigger: Update the Salon's Average Rating automatically
+        await pool.query(
+            `UPDATE salons 
+             SET rating = (SELECT AVG(rating)::numeric(2,1) FROM reviews WHERE salon_id = $1)
+             WHERE salon_id = $1`,
+            [salon_id]
+        );
+
+        res.status(201).json({ success: true, reviewId: result.rows[0].id });
+
+    } catch (err) {
+        if (err.code === '23505') { // Unique constraint violation
+            return res.status(400).json({ msg: "You have already reviewed this appointment." });
+        }
+        res.status(500).json({ msg: "Server Error: " + err.message });
+    }
+};
+
 exports.getSalonReviews = async (req, res) => {
     try {
         const { salon_id } = req.params;
@@ -440,6 +480,25 @@ exports.getSalonReviews = async (req, res) => {
             [salon_id]
         );
         res.json(result.rows);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
+exports.getPendingReview = async (req, res) => {
+    try {
+        const { user_id } = req.params;
+        const result = await pool.query(
+            `SELECT a.id as appointment_id, a.salon_id, s.salon_name 
+             FROM appointments a
+             JOIN salons s ON a.salon_id = s.salon_id
+             WHERE a.customer_id = $1 
+             AND a.status_id = (SELECT id FROM appointment_status WHERE status_name = 'Completed')
+             AND a.id NOT IN (SELECT appointment_id FROM reviews)
+             ORDER BY a.appointment_date DESC LIMIT 1`,
+            [user_id]
+        );
+        res.json(result.rows[0] || null);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
