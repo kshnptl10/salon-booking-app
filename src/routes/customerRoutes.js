@@ -33,7 +33,7 @@ router.get('/recommended', customerController.getRecommendedServices);
 
 router.post('/submitReview', customerController.submitReview);
 router.get('/salonReviews/:salon_id', customerController.getSalonReviews);
-router.get('/pendingReviews', customerController.getPendingReview);
+router.get('/pendingReviews/:user_id', customerController.getPendingReview);
 // You must change your frontend JavaScript calls to use the updated, explicit paths:
 // Old: fetch('/api/appointments')  -->  New: fetch('/api/customer/appointments/me') 
 
