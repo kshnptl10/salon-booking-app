@@ -15,6 +15,7 @@ router.get('/services/:salonId', customerController.getServicesBySalon);
 router.get('/staff/:salonId', customerController.getAvailableStaffBySalon);
 router.get('/timeslots', customerController.getAvailableTimeSlots);
 router.get('/my-appointments', customerController.getCustomerAppointments);
+router.get('/getSalonReviews/:salonId', customerController.getSalonReviews);
 
 // --- 2. Authorization Boundary ---
 // Apply the authorization middleware here. 

@@ -428,3 +428,19 @@ ORDER BY rs.slot_time ASC;
         res.status(500).json({ error: 'Server error fetching time slots.' });
     }
 };
+
+exports.getSalonReviews = async (req, res) => {
+    try {
+        const { salon_id } = req.params;
+        const result = await pool.query(
+            `SELECT r.*, u.name as customer_name 
+             FROM reviews r 
+             JOIN users u ON r.customer_id = u.id 
+             WHERE r.salon_id = $1 ORDER BY r.created_at DESC`,
+            [salon_id]
+        );
+        res.json(result.rows);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
