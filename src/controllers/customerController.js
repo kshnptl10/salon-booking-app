@@ -472,16 +472,29 @@ exports.submitReview = async (req, res) => {
 };
 
 exports.getSalonReviews = async (req, res) => {
+    const { salon_id } = req.params;
     try {
-        const { salon_id } = req.params;
+        // 🚀 Fetch reviews and join with customers to get names
         const result = await pool.query(
             `SELECT r.*, c.name as customer_name 
-             FROM reviews r 
-             JOIN customers c ON r.customer_id = c.id 
-             WHERE r.salon_id = $1 ORDER BY r.created_at DESC`,
+             FROM reviews r
+             JOIN customers c ON r.customer_id = c.id
+             WHERE r.salon_id = $1
+             ORDER BY r.created_at DESC`,
             [salon_id]
         );
-        res.json(result.rows);
+        
+        // 📊 Fetch the specific salon's current rating from the salons table
+        const salonResult = await pool.query(
+            `SELECT rating FROM salons WHERE salon_id = $1`,
+            [salon_id]
+        );
+
+        res.json({
+            reviews: result.rows,
+            averageRating: salonResult.rows[0]?.rating || 0,
+            totalReviews: result.rows.length
+        });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
