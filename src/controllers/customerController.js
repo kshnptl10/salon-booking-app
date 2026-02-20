@@ -115,6 +115,41 @@ exports.getServicesBySalon = async (req, res) => {
 
 // --- 3. Get Customer Appointments ---
 
+exports.getAppoinments = async (req, res) => {
+    const customerId = req.session.userId || req.query.userId || req.headers['user-id'];
+    if (!customerId) {
+        if (req.headers.accept === 'application/json') {
+            return res.status(401).json({ error: "Unauthorized. Please provide customerId." });
+        }
+        return res.status(401).json({ success: false, message: "Unauthorized" });
+    }
+    try {
+        const result = await pool.query(`
+            SELECT 
+                a.id,
+                to_char(a.appointment_date, 'YYYY-MM-DD') as appointment_date,
+                a.appointment_time,
+                ast.status_name AS status,
+                s.salon_name,
+                sv.name AS service_name,
+                COALESCE(st.name, 'Unassigned Stylist') AS staff_name,
+                a.total_amount,
+                a.payment_status
+            FROM appointments a
+            JOIN salons s ON a.salon_id = s.salon_id
+            JOIN services sv ON a.service_id = sv.id 
+            JOIN appointment_status ast ON a.status_id = ast.id
+            LEFT JOIN staff st ON a.staff_id = st.id
+            WHERE a.customer_id = $1
+            ORDER BY a.appointment_date DESC, a.appointment_time DESC
+        `, [customerId]);
+        res.json(result.rows);
+    } catch (err) {
+        console.error("Error fetching appointments:", err.message);
+        res.status(500).send('Server Error');
+    }
+};
+
 exports.getCustomerAppointments = async (req, res) => {
     
     const customerId = req.session.userId || req.query.userId || req.headers['user-id'];
