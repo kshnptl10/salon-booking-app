@@ -141,7 +141,18 @@ exports.getAppoinments = async (req, res) => {
             JOIN appointment_status ast ON a.status_id = ast.id
             LEFT JOIN staff st ON a.staff_id = st.id
             WHERE a.customer_id = $1
-            ORDER BY a.appointment_date DESC, a.appointment_time DESC
+            ORDER BY 
+            CASE ast.status_name
+                    WHEN 'Confirmed' THEN 1  -- Highest Priority
+                    WHEN 'Pending'   THEN 2
+                    WHEN 'Active'    THEN 3
+                    WHEN 'Completed' THEN 4
+                    WHEN 'No-Show'   THEN 5
+                    WHEN 'Canceled'  THEN 6  -- Lowest Priority
+                    WHEN 'Cancelled' THEN 6  -- (Just in case of spelling diff)
+                    ELSE 7
+                END ASC,
+            a.appointment_date DESC, a.appointment_time DESC
         `, [customerId]);
         res.json(result.rows);
     } catch (err) {
