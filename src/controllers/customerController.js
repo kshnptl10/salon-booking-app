@@ -472,6 +472,13 @@ LEFT JOIN appointments a
     AND a.appointment_date = $2 
     AND a.appointment_time = rs.slot_time
     AND a.status_id IN (SELECT id FROM appointment_status WHERE status_name IN ('Pending', 'Confirmed'))
+    WHERE rs.slot_time NOT IN (
+    SELECT appointment_time 
+    FROM appointments 
+    WHERE customer_id = 4
+      AND appointment_date = '02/28/2026' 
+      AND status_id IN (SELECT id FROM appointment_status WHERE status_name IN ('Pending', 'Confirmed'))
+)
 GROUP BY rs.slot_time
 HAVING COUNT(a.id) < (SELECT slot_capacity FROM rules)
 ORDER BY rs.slot_time ASC;
