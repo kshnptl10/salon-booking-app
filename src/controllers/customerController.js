@@ -419,7 +419,7 @@ exports.getSalonDetails = async (req, res) => {
     }
 };
 
-exports.getAvailableTimeSlots = async (req, res) => {
+exports.getAvailableTimeSlots = async (req, res) => { 
     // Expected query parameters: ?salonId=X&date=YYYY-MM-DD
     const { salonId, date } = req.query;
 
@@ -475,8 +475,8 @@ LEFT JOIN appointments a
     WHERE rs.slot_time NOT IN (
     SELECT appointment_time 
     FROM appointments 
-    WHERE customer_id = 4
-      AND appointment_date = '02/28/2026' 
+    WHERE customer_id = $3
+      AND appointment_date = $2 
       AND status_id IN (SELECT id FROM appointment_status WHERE status_name IN ('Pending', 'Confirmed'))
 )
 GROUP BY rs.slot_time

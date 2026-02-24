@@ -55,7 +55,51 @@ function renderAppointments(appointments) {
     }
 
     // Build the HTML using .map and .join
-    listContainer.innerHTML = appointments.map(a => `
+    listContainer.innerHTML = appointments.map(a => {
+        // 1. Calculate Time Difference for the 24-Hour Rule
+        // Ensure date is formatted correctly for parsing (YYYY-MM-DD)
+        const dateStr = a.appointment_date.split('T')[0]; 
+        const appointmentDateTime = new Date(`${dateStr}T${a.appointment_time}`);
+        const now = new Date();
+        const diffInHours = (appointmentDateTime - now) / (1000 * 60 * 60);
+
+        // 2. Generate Action Buttons (Reschedule / Cancel)
+        let actionButtonsHtml = '';
+        if (a.status === 'Pending' || a.status === 'Confirmed') {
+            if (diffInHours >= 24) {
+                // More than 24 hours away: Show standard buttons
+                actionButtonsHtml = `
+                    <div class="appointment-actions">
+                        <button onclick="openRescheduleModal(${a.id}, ${a.salon_id})">Reschedule</button>
+                        <button class="btn-cancel" onclick="cancelAppointment(${a.id})">Cancel</button>
+                    </div>
+                `;
+            } else if (diffInHours > 0) {
+                // Less than 24 hours away: Lock the buttons
+                actionButtonsHtml = `
+                    <div class="appointment-actions">
+                        <span class="locked-text" style="color: #d9534f; font-size: 0.9em;">
+                            🔒 Locked (Less than 24h remaining)
+                        </span>
+                    </div>
+                `;
+            }
+        }
+
+        // 3. Generate Payment Button (Only if Unpaid and appointment is upcoming)
+        let paymentButtonHtml = '';
+        if (a.payment_status === 'Unpaid' && diffInHours > 0 && (a.status === 'Pending' || a.status === 'Confirmed')) {
+            paymentButtonHtml = `
+                <div style="margin-top: 10px;">
+                    <button class="btn-pay" style="background-color: #28a745; color: white;" onclick="initiatePayment(${a.id}, ${a.total_amount})">
+                        Pay Now (₹${a.total_amount})
+                    </button>
+                </div>
+            `;
+        }
+
+        // 4. Return the complete Card HTML
+        return `
         <div class="appointment-card">
           <h4>${a.salon_name}</h4>
           <p><strong>Service:</strong> ${a.service_name}</p>
@@ -64,20 +108,13 @@ function renderAppointments(appointments) {
           <p><strong>Price:</strong> ₹${a.total_amount}</p>
           <p><strong>Payment Status:</strong> ${a.payment_status}</p>
           <p><strong>Stylist:</strong> ${a.staff_name}</p>
-          <p>Status: <strong>${a.status}</strong></p>
-        ${(a.status === 'Pending' || a.status === 'Confirmed')
-            ? `
-            <div class="appointment-actions">
-            <button onclick="openRescheduleModal(${a.id}, ${a.salon_id})">Reschedule</button>
-            <button class="btn-cancel" onclick="cancelAppointment(${a.id})">Cancel</button>
-            </div>
-            `
-            : ''
-        }
-        </div>`
-    ).join("");
+          <p><strong>Status:</strong> ${a.status}</p>
+          ${actionButtonsHtml}  
+          ${paymentButtonHtml}
+        </div>
+        `;
+    }).join('');
 }
-
 
 // 3. ✅ NEW: Function to Render Pagination Buttons
 function renderPagination(pagination) {
