@@ -4,7 +4,7 @@ exports.rescheduleAppointment = async (req, res) => {
     const appointmentId = req.params.id;
     const { newDate, newTime } = req.body;
     
-    const customerId = req.session.customerId;
+    const customerId = req.session?.customerId;
 
     if (!customerId) {
         return res.status(401).json({ 
@@ -31,7 +31,8 @@ exports.rescheduleAppointment = async (req, res) => {
         FROM appointments 
         WHERE id = $1 AND customer_id = $2
     `;
-        const timeCheckResult = await pool.query(timeCheckQuery, [appointmentId, req.user.id]);
+        const timeCheckResult = await pool.query(timeCheckQuery, [appointmentId, customerId]);
+       
         if (timeCheckResult.rowCount === 0) {
             return res.status(404).json({ message: "Appointment not found." });
         }
@@ -42,17 +43,17 @@ exports.rescheduleAppointment = async (req, res) => {
 
         const result = await pool.query(
             `UPDATE appointments 
-     SET appointment_date = $1, 
-         appointment_time = $2,
-         updated_at = NOW()
-     WHERE id = $3 
-     AND status_id NOT IN (
-         SELECT id FROM appointment_status 
-         WHERE status_name ILIKE 'Completed' 
-            OR status_name ILIKE 'Cancelled'
-     )
-     RETURNING id`, 
-            [newDate, newTime, appointmentId]
+             SET appointment_date = $1, 
+                 appointment_time = $2,
+                 updated_at = NOW()
+             WHERE id = $3 AND customer_id = $4
+             AND status_id NOT IN (
+                 SELECT id FROM appointment_status 
+                 WHERE status_name ILIKE 'Completed' 
+                    OR status_name ILIKE 'Cancelled'
+             )
+             RETURNING id`, 
+            [newDate, newTime, appointmentId, customerId]
         );
         
         if (result.rowCount === 0) {
