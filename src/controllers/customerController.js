@@ -314,6 +314,19 @@ exports.createAppointment = async (req, res) => {
         }
         const pendingStatusId = statusRes.rows[0].id;
         
+        const conflictCheckQuery = `
+        SELECT id, salon_id 
+        FROM appointments 
+        WHERE customer_id = $1 
+          AND appointment_date = $2 
+          AND appointment_time = $3
+          AND status_id IN (1, 2)
+    `;
+        const conflictCheckResult = await pool.query(conflictCheckQuery, [customer_id, appointment_date, appointment_time]);
+        if (conflictCheckResult.rows.length > 0) {
+            return res.status(409).json({success: false, msg: 'You already have an appointment at this date and time.' });
+        }
+
         // --- 3. Prepare Final Query Execution ---
         
         // Use COALESCE (staff_id || null) for optional staff ID
@@ -409,16 +422,16 @@ exports.getSalonDetails = async (req, res) => {
 exports.getAvailableTimeSlots = async (req, res) => {
     // Expected query parameters: ?salonId=X&date=YYYY-MM-DD
     const { salonId, date } = req.query;
+    
+    // Grab the customer ID from the session (Assuming you are using express-session)
+    // If you pass it via query params instead, change this to req.query.customerId
+    const customerId = req.session.user ? req.session.user.id : null;
 
-    if (!salonId || !date) {
-        return res.status(400).json({ error: 'Missing salonId or date query parameter.' });
+    if (!salonId || !date || !customerId) {
+        return res.status(400).json({ error: 'Missing salonId, date, or you are not logged in.' });
     }
 
     try {
-        // Query to fetch time slots available for the given salon (based on staff working there)
-        // AND ensuring the slot hasn't been booked or marked as unavailable.
-        // NOTE: This query assumes your 'staff' table has a 'salon_id' and 'time_slots' links to staff.
-        
         const result = await pool.query(
             `
     WITH 
@@ -435,12 +448,8 @@ exports.getAvailableTimeSlots = async (req, res) => {
         FROM time_slots 
         WHERE salon_id = $1 
         AND (
-            -- MATCH METHOD 1: Direct Number (0-6)
             TRIM(CAST(day_of_week AS TEXT)) = CAST(EXTRACT(DOW FROM $2::DATE) AS TEXT)
-            
             OR 
-            
-            -- MATCH METHOD 2: Case-Insensitive English Name (e.g. "Friday" = "friday")
             LOWER(TRIM(day_of_week)) = LOWER(TRIM(TO_CHAR($2::DATE, 'Day')))
         )
     ),
@@ -459,11 +468,19 @@ LEFT JOIN appointments a
     AND a.appointment_date = $2 
     AND a.appointment_time = rs.slot_time
     AND a.status_id IN (SELECT id FROM appointment_status WHERE status_name IN ('Pending', 'Confirmed'))
+-- 🔥 THE NEW FIX: Filter out any time the CURRENT CUSTOMER is already booked ANYWHERE 🔥
+WHERE rs.slot_time NOT IN (
+    SELECT appointment_time 
+    FROM appointments 
+    WHERE customer_id = $3 
+      AND appointment_date = $2 
+      AND status_id IN (SELECT id FROM appointment_status WHERE status_name IN ('Pending', 'Confirmed'))
+)
 GROUP BY rs.slot_time
 HAVING COUNT(a.id) < (SELECT slot_capacity FROM rules)
 ORDER BY rs.slot_time ASC;
             `,
-            [salonId, date]
+            [salonId, date, customerId] // Added customerId as $3
         );
 
         // Return only the time strings
