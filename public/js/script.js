@@ -109,7 +109,6 @@ async function submitReschedule() {
             headers: {
                 'Content-Type': 'application/json'
             },
-            credentials: 'same-origin',
             body: JSON.stringify({
                 newDate: newDate,
                 newTime: newTime
