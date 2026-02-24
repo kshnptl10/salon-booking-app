@@ -92,6 +92,13 @@ exports.getAvailableTimeSlots = async (req, res) => {
         AND a.appointment_time = rs.slot_time
         AND a.status_id IN (SELECT id FROM appointment_status WHERE status_name IN ('Pending', 'Confirmed'))
         AND a.id != $3  -- 👈 KEY CHANGE: Ignore the appointment being rescheduled
+        WHERE rs.slot_time NOT IN (
+    SELECT appointment_time
+    FROM appointments
+    WHERE customer_id = $3
+      AND appointment_date = $2
+      AND status_id IN (SELECT id FROM appointment_status WHERE status_name IN ('Pending', 'Confirmed'))
+)
     GROUP BY rs.slot_time
     HAVING COUNT(a.id) < (SELECT slot_capacity FROM rules)
     ORDER BY rs.slot_time ASC;
