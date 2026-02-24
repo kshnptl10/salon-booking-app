@@ -15,6 +15,22 @@ exports.rescheduleAppointment = async (req, res) => {
     }
 
     try {
+
+        const timeCheckQuery = `
+        SELECT 
+            EXTRACT(EPOCH FROM ((appointment_date + appointment_time) - (NOW() AT TIME ZONE 'Asia/Kolkata'))) / 3600 AS hours_remaining
+        FROM appointments 
+        WHERE id = $1 AND customer_id = $2
+    `;
+        const timeCheckResult = await pool.query(timeCheckQuery, [appointmentId, req.user.id]);
+        if (timeCheckResult.rowCount === 0) {
+            return res.status(404).json({ message: "Appointment not found." });
+        }
+        const hoursRemaining = timeCheckResult.rows[0].hours_remaining;
+        if (hoursRemaining < 24) {
+            return res.status(400).json({ message: "Cannot reschedule within 24 hours of the appointment." });
+        }
+
         const result = await pool.query(
             `UPDATE appointments 
      SET appointment_date = $1, 
