@@ -4,8 +4,8 @@ exports.rescheduleAppointment = async (req, res) => {
     const appointmentId = req.params.id;
     const { newDate, newTime } = req.body;
     
-    const customerId = req.session?.customerId;
-
+    const customerId = req.session?.userId;
+    
     if (!customerId) {
         return res.status(401).json({ 
             success: false, 
