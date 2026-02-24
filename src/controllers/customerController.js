@@ -423,6 +423,9 @@ exports.getAvailableTimeSlots = async (req, res) => {
     // Expected query parameters: ?salonId=X&date=YYYY-MM-DD
     const { salonId, date } = req.query;
 
+    const customerId = req.session?.user?.id || req.session?.customerId;
+
+
     if (!salonId || !date) {
         return res.status(400).json({ error: 'Missing salonId or date query parameter.' });
     }
@@ -483,7 +486,7 @@ GROUP BY rs.slot_time
 HAVING COUNT(a.id) < (SELECT slot_capacity FROM rules)
 ORDER BY rs.slot_time ASC;
             `,
-            [salonId, date]
+            [salonId, date, customerId] // Pass customerId to exclude their own bookings
         );
 
         // Return only the time strings
