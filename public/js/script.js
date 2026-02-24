@@ -89,27 +89,6 @@ function selectTimeSlot(time, element) {
     element.classList.add('active', 'btn-primary');
 }
 
-// Inside your frontend function that creates the appointment cards
-const appointmentDateTime = new Date(`${appointment.appointment_date.split('T')[0]}T${appointment.appointment_time}`);
-const now = new Date();
-
-// Calculate hours difference
-const diffInMs = appointmentDateTime - now;
-const diffInHours = diffInMs / (1000 * 60 * 60);
-
-let actionButtonsHtml = '';
-
-// Only show Reschedule and Cancel buttons if there are more than 24 hours left
-if (diffInHours >= 24) {
-    actionButtonsHtml = `
-        <button onclick="openRescheduleModal(${appointment.id})">Reschedule</button>
-        <button onclick="cancelAppointment(${appointment.id})">Cancel</button>
-    `;
-} else {
-    actionButtonsHtml = `<span class="locked-text">🔒 Locked (Less than 24h)</span>`;
-}
-
-// Add actionButtonsHtml to your card...
 async function submitReschedule() {
     const apptId = document.getElementById('rescheduleApptId').value;
     const newDate = document.getElementById('newDate').value;

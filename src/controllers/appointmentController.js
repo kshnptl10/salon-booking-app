@@ -4,6 +4,15 @@ exports.rescheduleAppointment = async (req, res) => {
     const appointmentId = req.params.id;
     const { newDate, newTime } = req.body;
     
+    const customerId = req.session?.user?.id;
+
+    if (!customerId) {
+        return res.status(401).json({ 
+            success: false, 
+            message: "Your session has expired. Please refresh the page and log in again." 
+        });
+    }
+
     if (!newDate || !newTime) {
         return res.status(400).json({ message: "New date and time are required." });
     }
