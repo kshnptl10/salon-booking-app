@@ -1,4 +1,3 @@
-
 const elements = {
     salonSelect: document.getElementById("salon"),
     serviceSelect: document.getElementById("service"),
@@ -30,7 +29,7 @@ const resetDropdown = (selectElement, defaultText) => {
 
 async function getUserId() {
     try {
-        const res = await fetch("/api/me");
+        const res = await fetch("/api/me", { credentials: 'same-origin' });
         if (!res.ok) throw new Error("Failed to fetch user data.");
         const user = await res.json();
         return user.id;
@@ -46,54 +45,6 @@ async function fetchSalons() {
     return await res.json();
 }
 
-// The function to build the dropdown and auto-select
-async function initSalonDropdown() {
-    try {
-        // 1. Get the data using your function
-        const data = await fetchSalons();
-        
-        // Handle array directly or { success: true, salons: [...] }
-        const salons = Array.isArray(data) ? data : (data.salons || []);
-        
-        // Find your dropdown element (Update 'salonSelect' to match your HTML ID)
-        const salonSelect = document.getElementById('salon'); 
-        
-        if (!salonSelect) {
-            console.error("Could not find the salon dropdown element.");
-            return;
-        }
-
-        // 2. Populate the dropdown options
-        salonSelect.innerHTML = '<option value="">-- Choose a Salon --</option>';
-        salons.forEach(salon => {
-            const option = document.createElement('option');
-            // Make sure these match your database column names (e.g., id vs salon_id)
-            option.value = salon.id || salon.salon_id; 
-            option.textContent = salon.name || salon.salon_name;
-            salonSelect.appendChild(option);
-        });
-
-        // 3. Check the URL for ?salon_id=123
-        const urlParams = new URLSearchParams(window.location.search);
-        const preselectedSalonId = urlParams.get('salon_id');
-
-        // 4. Auto-select and trigger the next step
-        if (preselectedSalonId) {
-            salonSelect.value = preselectedSalonId;
-            
-            // 🔥 This makes the browser think the user clicked it, 
-            // so your "loadServices()" function runs automatically!
-            salonSelect.dispatchEvent(new Event('change'));
-        }
-
-    } catch (error) {
-        console.error("Error setting up salon dropdown:", error);
-    }
-}
-
-// 5. Run this exactly when the page loads
-document.addEventListener('DOMContentLoaded', initSalonDropdown);
-
 async function fetchServices(salonId) {
     const res = await fetch(`/api/customer/services/${salonId}`);
     if (!res.ok) throw new Error("Failed to fetch services");
@@ -107,33 +58,43 @@ async function fetchStaff(salonId) {
 }
 
 async function fetchTimeSlots(salonId, date) {
-    const res = await fetch(`/api/customer/timeslots?salonId=${salonId}&date=${date}`);
+    const res = await fetch(`/api/customer/timeslots?salonId=${salonId}&date=${date}`, {
+        credentials: 'same-origin' // Keep session alive
+    });
     if (!res.ok) throw new Error("Failed to fetch time slots");
     return await res.json();
 }
 
+// 🔥 Your Unified Load Salons Function
 async function loadSalons(preselectedSalonId, preselectedServiceId) {
     try {
-        const salons = await fetchSalons();
+        const data = await fetchSalons();
+        // Handle both API response types
+        const salons = Array.isArray(data) ? data : (data.salons || []);
 
         // clear previous options
         resetDropdown(elements.salonSelect, "Select a Salon");
 
         salons.forEach(salon => {
             const option = document.createElement("option");
-            option.value = salon.salon_id;
+            // Standardize ID handling
+            const salonId = salon.salon_id || salon.id; 
+            option.value = salonId;
+            
             const locationInfo = salon.branch_name || salon.city || '';
             const branchLabel = locationInfo ? ` - ${locationInfo}` : '';
-            option.textContent = salon.salon_name + branchLabel;
+            option.textContent = (salon.salon_name || salon.name) + branchLabel;
 
-            if (preselectedSalonId && salon.salon_id == preselectedSalonId) {
+            // Check if this option matches the URL parameter
+            if (preselectedSalonId && salonId == preselectedSalonId) {
                 option.selected = true;
             }
             elements.salonSelect.appendChild(option);
         });
 
+        // If a salon was selected via URL, automatically trigger the services load
         if (preselectedSalonId) {
-            elements.salonSelect.disabled = true; // Lock salon if preselected via session
+            elements.salonSelect.disabled = true; // Optional: Lock salon if preselected 
             loadServices(preselectedSalonId, preselectedServiceId);
         }
     } catch (err) {
@@ -203,10 +164,10 @@ async function renderTimeSlots(salonId, date) {
             return;
         }
 
-        // Render buttons using data attributes (cleaner than onclick)
+        // Render buttons using data attributes
         container.innerHTML = slots.map(slot => `
-            <button type="button" class="btn btn-slot" data-value="${slot.slot_time}">
-                ${formatTime(slot.slot_time)}
+            <button type="button" class="btn btn-slot" data-value="${slot.slot_time || slot}">
+                ${formatTime(slot.slot_time || slot)}
             </button>
         `).join('');
 
@@ -215,6 +176,7 @@ async function renderTimeSlots(salonId, date) {
         container.innerHTML = '<p class="text-danger">Error loading slots.</p>';
     }
 }
+
 // 5.1. Dropdown Changes
 elements.salonSelect.addEventListener("change", () => {
     const salonId = elements.salonSelect.value;
@@ -241,17 +203,16 @@ elements.timeSlotContainer.addEventListener('click', (e) => {
     if (!btn) return; // Ignore clicks that aren't on buttons
 
     // Deselect siblings
-    elements.timeSlotContainer.querySelectorAll('.btn-slot').forEach(b => b.classList.remove('selected'));
+    elements.timeSlotContainer.querySelectorAll('.btn-slot').forEach(b => b.classList.remove('selected', 'btn-primary'));
     
     // Select clicked button
-    btn.classList.add('selected');
+    btn.classList.add('selected', 'btn-primary');
     
     // Update Hidden Input
     elements.timeInput.value = btn.dataset.value;
 });
 
 // 5.4. Form Submission
-
 elements.bookingForm.addEventListener("submit", async (e) => {
     e.preventDefault();
 
@@ -264,7 +225,7 @@ elements.bookingForm.addEventListener("submit", async (e) => {
     }
 
     const userId = await getUserId();
-    if (!userId) return alert("Please log in again.");
+    if (!userId) return alert("Your session expired. Please log in again.");
 
     // 2. Prepare Data
     const bookingData = {
@@ -273,9 +234,7 @@ elements.bookingForm.addEventListener("submit", async (e) => {
         service_id: serviceSelect.value,
         staff_id: staffSelect.value || null,
         appointment_date: dateInput.value,
-        appointment_time: timeInput.value,
-        // IMPORTANT: Add price if you have it in a hidden field, or backend calculates it
-        // payment_status: 'Pending' (Backend should set this default)
+        appointment_time: timeInput.value
     };
 
     const submitBtn = document.querySelector('button[type="submit"]');
@@ -283,10 +242,11 @@ elements.bookingForm.addEventListener("submit", async (e) => {
     submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
 
     try {
-        // 3. STEP 1: CREATE THE BOOKING (Pending Status)
+        // 3. STEP 1: CREATE THE BOOKING
         const res = await fetch("/api/customer/bookings", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
+            credentials: 'same-origin', // 🔥 Ensures user session stays active
             body: JSON.stringify(bookingData)
         });
 
@@ -294,12 +254,10 @@ elements.bookingForm.addEventListener("submit", async (e) => {
 
         if (!res.ok) throw new Error(data.message || 'Booking failed.');
 
-        // ✅ WE NOW HAVE THE ID!
-        const newAppointmentId = data.appointmentId; 
-        const amountToPay = 500; // You should ideally get this from the backend response too: data.price
-        
         // 4. STEP 2: INITIATE PAYMENT
-        // We pass the new ID to your Razorpay function
+        const newAppointmentId = data.appointmentId; 
+        const amountToPay = data.price || 500; // Try to use backend price, fallback to 500
+        
         await initiatePayment(newAppointmentId, amountToPay);
 
     } catch (err) {
@@ -310,32 +268,18 @@ elements.bookingForm.addEventListener("submit", async (e) => {
     }
 });
 
-// --- INITIALIZATION ---
-document.addEventListener("DOMContentLoaded", () => {
-    // 1. Check URL parameters for pre-selected salon/service
-    // (e.g. if user clicked "Book Now" from a specific salon card)
-    const urlParams = new URLSearchParams(window.location.search);
-    const preSalonId = urlParams.get('salonId');
-    const preServiceId = urlParams.get('serviceId');
-
-    // 2. Load the Salons
-    loadSalons(preSalonId, preServiceId);
-});
-
-
 async function initiatePayment(appointmentId, amount) {
     try {
-        // 1. Create Order
         const response = await fetch('/api/payment/create-order', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
+            credentials: 'same-origin', // 🔥 Needed for secure payment session
             body: JSON.stringify({ amount: amount, appointmentId: appointmentId })
         });
         
         const orderData = await response.json();
         if (!orderData.success) throw new Error(orderData.message);
 
-        // 2. Open Razorpay
         const options = {
             "key": orderData.key_id,
             "amount": orderData.amount,
@@ -344,10 +288,10 @@ async function initiatePayment(appointmentId, amount) {
             "description": "Service Payment",
             "order_id": orderData.order_id,
             "handler": async function (response) {
-                // 3. Verify Payment
                 const verifyRes = await fetch('/api/payment/verify-payment', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
+                    credentials: 'same-origin',
                     body: JSON.stringify({
                         razorpay_order_id: response.razorpay_order_id,
                         razorpay_payment_id: response.razorpay_payment_id,
@@ -359,17 +303,17 @@ async function initiatePayment(appointmentId, amount) {
                 const verifyData = await verifyRes.json();
                 if (verifyData.success) {
                     alert("Payment Successful! Booking Confirmed.");
-                    window.location.href = "c_dashboard.html"; // Redirect on success
+                    window.location.href = "c_dashboard.html"; 
                 } else {
                     alert("Payment Verification Failed. Please contact support.");
                 }
             },
-            "prefill": { "contact": "9999999999" }, // Optional: prefill user phone
+            "prefill": { "contact": "9999999999" }, 
             "theme": { "color": "#3399cc" },
             "modal": {
                 "ondismiss": function() {
                     alert('Payment cancelled. Your booking is saved as Pending.');
-                    window.location.href = "c_myappointments.html"; // Redirect to "My Bookings" so they can pay later
+                    window.location.href = "c_myappointments.html"; 
                 }
             }
         };
@@ -382,3 +326,15 @@ async function initiatePayment(appointmentId, amount) {
         alert("Could not initialize payment: " + error.message);
     }
 }
+
+// --- INITIALIZATION ---
+// 🔥 Only ONE DOMContentLoaded event now!
+document.addEventListener("DOMContentLoaded", () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    
+    // Check for both ?salonId=1 and ?salon_id=1 to prevent spelling bugs
+    const preSalonId = urlParams.get('salonId') || urlParams.get('salon_id');
+    const preServiceId = urlParams.get('serviceId') || urlParams.get('service_id');
+
+    loadSalons(preSalonId, preServiceId);
+});
