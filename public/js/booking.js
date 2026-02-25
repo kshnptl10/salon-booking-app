@@ -118,14 +118,20 @@ async function loadServices(salonId, preselectedServiceId) {
     try {
         const services = await fetchServices(salonId);
         const servicesArray = Array.isArray(services) ? services : (services.services || services.data || []);
+        
         servicesArray.forEach(service => {
             const option = document.createElement("option");
-            option.value = service.id;
-            option.textContent = service.name;
+            
+            // 🔥 THE FIX: Tell JS to look for either 'id' OR 'service_id'
+            const actualServiceId = service.id || service.service_id;
+            
+            option.value = actualServiceId;
+            option.textContent = service.name || service.service_name;
 
-            if (preselectedServiceId && service.id == preselectedServiceId) {
+            // Use actualServiceId to check against the URL parameter
+            if (preselectedServiceId && actualServiceId == preselectedServiceId) {
                 option.selected = true;
-                loadStaff(salonId, service.id); // Trigger staff load
+                loadStaff(salonId, actualServiceId); // Trigger staff load
             }
             elements.serviceSelect.appendChild(option);
         });
@@ -135,17 +141,21 @@ async function loadServices(salonId, preselectedServiceId) {
 }
 
 async function loadStaff(salonId, serviceId) {
-    resetDropdown(elements.staffSelect, "Any Staff Member"); // "Any" implies null is okay
+    resetDropdown(elements.staffSelect, "Any Staff Member"); 
 
     if (!salonId) return;
 
     try {
         const staffList = await fetchStaff(salonId);
         const staffArray = Array.isArray(staffList) ? staffList : (staffList.staff || staffList.data || []);
+        
         staffArray.forEach(staff => {
             const option = document.createElement("option");
-            option.value = staff.id;
-            option.textContent = staff.name;
+            
+            // 🔥 Applying the same fix here just in case!
+            option.value = staff.id || staff.staff_id;
+            option.textContent = staff.name || staff.staff_name;
+            
             elements.staffSelect.appendChild(option);
         });
     } catch (err) {
