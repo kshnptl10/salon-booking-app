@@ -77,7 +77,7 @@ exports.getNearbySalons = async (req, res) => {
                     salon_id, salon_name, address, city, image_url, rating
                 FROM salons 
                 ORDER BY salon_id ASC
-                LIMIT 10;
+                LIMIT 5;
             `;
             params = [];
         }
