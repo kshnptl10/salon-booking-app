@@ -191,7 +191,7 @@ function bookNow(salonId, salonName, serviceId = null, serviceName = null) {
     }
 
     // 4. Navigate
-    window.location.href = "/customer/booking.html";
+    window.location.href = `/customer/booking.html?salon_id=${salonId}`;
 }
 
 // ==========================================

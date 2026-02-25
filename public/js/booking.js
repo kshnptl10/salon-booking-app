@@ -46,6 +46,54 @@ async function fetchSalons() {
     return await res.json();
 }
 
+// The function to build the dropdown and auto-select
+async function initSalonDropdown() {
+    try {
+        // 1. Get the data using your function
+        const data = await fetchSalons();
+        
+        // Handle array directly or { success: true, salons: [...] }
+        const salons = Array.isArray(data) ? data : (data.salons || []);
+        
+        // Find your dropdown element (Update 'salonSelect' to match your HTML ID)
+        const salonSelect = document.getElementById('salon'); 
+        
+        if (!salonSelect) {
+            console.error("Could not find the salon dropdown element.");
+            return;
+        }
+
+        // 2. Populate the dropdown options
+        salonSelect.innerHTML = '<option value="">-- Choose a Salon --</option>';
+        salons.forEach(salon => {
+            const option = document.createElement('option');
+            // Make sure these match your database column names (e.g., id vs salon_id)
+            option.value = salon.id || salon.salon_id; 
+            option.textContent = salon.name || salon.salon_name;
+            salonSelect.appendChild(option);
+        });
+
+        // 3. Check the URL for ?salon_id=123
+        const urlParams = new URLSearchParams(window.location.search);
+        const preselectedSalonId = urlParams.get('salon_id');
+
+        // 4. Auto-select and trigger the next step
+        if (preselectedSalonId) {
+            salonSelect.value = preselectedSalonId;
+            
+            // 🔥 This makes the browser think the user clicked it, 
+            // so your "loadServices()" function runs automatically!
+            salonSelect.dispatchEvent(new Event('change'));
+        }
+
+    } catch (error) {
+        console.error("Error setting up salon dropdown:", error);
+    }
+}
+
+// 5. Run this exactly when the page loads
+document.addEventListener('DOMContentLoaded', initSalonDropdown);
+
 async function fetchServices(salonId) {
     const res = await fetch(`/api/customer/services/${salonId}`);
     if (!res.ok) throw new Error("Failed to fetch services");
