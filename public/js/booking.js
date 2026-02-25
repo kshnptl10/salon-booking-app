@@ -39,14 +39,8 @@ async function getUserId() {
     }
 }
 
-async function fetchSalons(serviceId = null) {
-    let url = "/api/customer/salons";
-
-    if (serviceId) {
-        url += `?service_id=${serviceId}`;
-    }
-
-    const res = await fetch(url, { credentials: 'same-origin' });
+async function fetchSalons() {
+    const res = await fetch("/api/customer/salons");
     if (!res.ok) throw new Error("Failed to fetch salons");
     return await res.json();
 }
@@ -74,8 +68,7 @@ async function fetchTimeSlots(salonId, date) {
 // 🔥 Your Unified Load Salons Function
 async function loadSalons(preselectedSalonId, preselectedServiceId) {
     try {
-        const filterByService = !preselectedSalonId ? preselectedServiceId : null;
-        const data = await fetchSalons(filterByService);
+        const data = await fetchSalons();
         // Handle both API response types
         const salons = Array.isArray(data) ? data : (data.salons || []);
 
@@ -117,21 +110,14 @@ async function loadServices(salonId, preselectedServiceId) {
 
     try {
         const services = await fetchServices(salonId);
-        const servicesArray = Array.isArray(services) ? services : (services.services || services.data || []);
-        
-        servicesArray.forEach(service => {
+        services.forEach(service => {
             const option = document.createElement("option");
-            
-            // 🔥 THE FIX: Tell JS to look for either 'id' OR 'service_id'
-            const actualServiceId = service.id || service.service_id;
-            
-            option.value = actualServiceId;
-            option.textContent = service.name || service.service_name;
+            option.value = service.id;
+            option.textContent = service.name;
 
-            // Use actualServiceId to check against the URL parameter
-            if (preselectedServiceId && actualServiceId == preselectedServiceId) {
+            if (preselectedServiceId && service.id == preselectedServiceId) {
                 option.selected = true;
-                loadStaff(salonId, actualServiceId); // Trigger staff load
+                loadStaff(salonId, service.id); // Trigger staff load
             }
             elements.serviceSelect.appendChild(option);
         });
@@ -141,21 +127,16 @@ async function loadServices(salonId, preselectedServiceId) {
 }
 
 async function loadStaff(salonId, serviceId) {
-    resetDropdown(elements.staffSelect, "Any Staff Member"); 
+    resetDropdown(elements.staffSelect, "Any Staff Member"); // "Any" implies null is okay
 
     if (!salonId) return;
 
     try {
         const staffList = await fetchStaff(salonId);
-        const staffArray = Array.isArray(staffList) ? staffList : (staffList.staff || staffList.data || []);
-        
-        staffArray.forEach(staff => {
+        staffList.forEach(staff => {
             const option = document.createElement("option");
-            
-            // 🔥 Applying the same fix here just in case!
-            option.value = staff.id || staff.staff_id;
-            option.textContent = staff.name || staff.staff_name;
-            
+            option.value = staff.id;
+            option.textContent = staff.name;
             elements.staffSelect.appendChild(option);
         });
     } catch (err) {
@@ -199,10 +180,9 @@ async function renderTimeSlots(salonId, date) {
 // 5.1. Dropdown Changes
 elements.salonSelect.addEventListener("change", () => {
     const salonId = elements.salonSelect.value;
-    const urlParams = new URLSearchParams(window.location.search);
-    const pendingServiceId = urlParams.get('serviceId') || urlParams.get('service_id');
+    
     // Reset downstream logic
-    loadServices(salonId, pendingServiceId);
+    loadServices(salonId, null);
     elements.timeInput.value = ''; 
     elements.dateInput.value = ''; 
     elements.timeSlotContainer.innerHTML = '<p class="text-muted">Please select a date.</p>';
