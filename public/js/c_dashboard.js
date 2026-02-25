@@ -184,14 +184,19 @@ function bookNow(salonId, salonName, serviceId = null, serviceName = null) {
         sessionStorage.removeItem("selectedSalonName");
     }
 
-    // 3. Save Service Info (if clicked from Recommended Services)
-    if (serviceId) {
-        sessionStorage.setItem("selectedServiceId", serviceId);
-        sessionStorage.setItem("selectedServiceName", serviceName);
-    }
-
     // 4. Navigate
     window.location.href = `/customer/booking.html?salon_id=${salonId}`;
+}
+
+function bookServiceDirectly(serviceId, serviceName) {
+    // Clear previous selections
+    sessionStorage.removeItem("selectedSalonId");
+    sessionStorage.removeItem("selectedSalonName");
+    // Save Service Info
+    sessionStorage.setItem("selectedServiceId", serviceId);
+    sessionStorage.setItem("selectedServiceName", serviceName);
+    // Navigate to a generic booking page that can handle service-only selection
+    window.location.href = `/customer/booking.html?service_id=${serviceId}`;
 }
 
 // ==========================================

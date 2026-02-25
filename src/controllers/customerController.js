@@ -98,18 +98,37 @@ exports.getNearbySalons = async (req, res) => {
 
 // --- 2. Get Services for Dashboard ---
 exports.getServicesBySalon = async (req, res) => {
+    const { service_id } = req.query;
+
     try {
-        const { salonId } = req.params;
-        const result = await pool.query(`
-            SELECT id, salon_id, name, price, duration_minutes, description
-            FROM services
-            WHERE is_active = TRUE AND salon_id = $1
-            ORDER BY id ASC
-        `, [salonId]);
-        res.json(result.rows);
+        let query;
+        let params = [];
+
+        // If the frontend asked for salons with a specific service...
+        if (service_id) {
+            // We use JOIN to connect salons to services, and DISTINCT so we don't get duplicates
+            query = `
+                SELECT DISTINCT s.id AS salon_id, s.name AS salon_name, s.city, s.address 
+                FROM salons s
+                JOIN services srv ON s.id = srv.salon_id
+                WHERE srv.id = $1 OR srv.name = (SELECT name FROM services WHERE id = $1)
+                ORDER BY s.name ASC
+            `;
+            // Note: The "OR srv.name =" part ensures that if you select "Men's Haircut" (ID 5) from Salon A, 
+            // it will also show Salon B if they have a service called "Men's Haircut".
+            params = [service_id];
+        } 
+        // Otherwise, just load all normal salons
+        else {
+            query = `SELECT salon_id, salon_name, city, address FROM salons ORDER BY salon_name ASC`;
+        }
+
+        const result = await pool.query(query, params);
+        res.json({ success: true, salons: result.rows });
+
     } catch (err) {
-        console.error("Error fetching services:", err.message);
-        res.status(500).send('Server Error');
+        console.error("Error fetching salons:", err);
+        res.status(500).json({ success: false, message: "Server error" });
     }
 };
 

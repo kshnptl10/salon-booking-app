@@ -41,6 +41,11 @@ async function getUserId() {
 
 async function fetchSalons() {
     const res = await fetch("/api/customer/salons");
+
+    if (serviceId) {
+        url += `?service_id=${serviceId}`;
+    }
+
     if (!res.ok) throw new Error("Failed to fetch salons");
     return await res.json();
 }
@@ -68,7 +73,8 @@ async function fetchTimeSlots(salonId, date) {
 // 🔥 Your Unified Load Salons Function
 async function loadSalons(preselectedSalonId, preselectedServiceId) {
     try {
-        const data = await fetchSalons();
+        const filterByService = !preselectedSalonId ? preselectedServiceId : null;
+        const data = await fetchSalons(filterByService);
         // Handle both API response types
         const salons = Array.isArray(data) ? data : (data.salons || []);
 
@@ -180,9 +186,10 @@ async function renderTimeSlots(salonId, date) {
 // 5.1. Dropdown Changes
 elements.salonSelect.addEventListener("change", () => {
     const salonId = elements.salonSelect.value;
-    
+    const urlParams = new URLSearchParams(window.location.search);
+    const pendingServiceId = urlParams.get('serviceId') || urlParams.get('service_id');
     // Reset downstream logic
-    loadServices(salonId, null);
+    loadServices(salonId, pendingServiceId);
     elements.timeInput.value = ''; 
     elements.dateInput.value = ''; 
     elements.timeSlotContainer.innerHTML = '<p class="text-muted">Please select a date.</p>';
