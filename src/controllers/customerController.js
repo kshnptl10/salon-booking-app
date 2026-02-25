@@ -50,11 +50,18 @@ exports.getNearbySalons = async (req, res) => {
         const latitude = parseFloat(lat);
         const longitude = parseFloat(lng);
 
-        // SCENARIO 1: We have valid GPS coordinates
         if (!isNaN(latitude) && !isNaN(longitude)) {
-            // We removed the 5km limit and bounding box. 
-            // Now it simply calculates distance for all active salons and sorts by the absolute closest.
+            // OPTIMIZATION: Create a "Bounding Box" of ~0.5 degrees (approx 50km)
+            // This filters out 99% of salons INSTANTLY before running the heavy math.
+            const roughDist = 0.5; 
+
             query = `
+                WITH nearby_candidates AS (
+                    SELECT * FROM salons
+                    -- FIX: Cast parameters to float so DB knows these are numbers
+                    WHERE latitude BETWEEN ($1::float - $3::float) AND ($1::float + $3::float)
+                      AND longitude BETWEEN ($2::float - $3::float) AND ($2::float + $3::float)
+                )
                 SELECT 
                     salon_id, salon_name, address, city, image_url, rating,
                     (
@@ -63,22 +70,20 @@ exports.getNearbySalons = async (req, res) => {
                             sin(radians($1)) * sin(radians(latitude))
                         )
                     ) AS distance_km
-                FROM salons
+                FROM nearby_candidates
+                WHERE (
+                    6371 * acos(
+                        cos(radians($1)) * cos(radians(latitude)) * cos(radians(longitude) - radians($2)) + 
+                        sin(radians($1)) * sin(radians(latitude))
+                    )
+                ) <= 5 
                 ORDER BY distance_km ASC
-                LIMIT 10;
+                LIMIT 20;
             `;
-            params = [latitude, longitude]; 
-        } 
-        
-        // SCENARIO 2: Fallback (Location is blocked or GPS failed)
-        else {
-            query = `
-                SELECT 
-                    salon_id, salon_name, address, city, image_url, rating
-                FROM salons 
-                ORDER BY salon_id ASC
-                LIMIT 5;
-            `;
+            params = [latitude, longitude, roughDist]; 
+        } else {
+            // Default view if no location
+            query = `SELECT * FROM salons ORDER BY salon_id  LIMIT 5`;
             params = [];
         }
 
@@ -87,8 +92,7 @@ exports.getNearbySalons = async (req, res) => {
 
     } catch (err) {
         console.error("Get Salons Error:", err);
-        // Using console.error will log the exact SQL syntax error to your Render dashboard if one happens!
-        res.status(500).json({ message: "Server error", error: err.message });
+        res.status(500).json({ message: "Server error" });
     }
 };
 
