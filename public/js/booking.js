@@ -39,13 +39,14 @@ async function getUserId() {
     }
 }
 
-async function fetchSalons() {
-    const res = await fetch("/api/customer/salons");
+async function fetchSalons(serviceId = null) {
+    let url = "/api/customer/salons";
 
     if (serviceId) {
         url += `?service_id=${serviceId}`;
     }
 
+    const res = await fetch(url, { credentials: 'same-origin' });
     if (!res.ok) throw new Error("Failed to fetch salons");
     return await res.json();
 }
