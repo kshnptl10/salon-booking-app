@@ -117,7 +117,8 @@ async function loadServices(salonId, preselectedServiceId) {
 
     try {
         const services = await fetchServices(salonId);
-        services.forEach(service => {
+        const servicesArray = Array.isArray(services) ? services : (services.services || services.data || []);
+        servicesArray.forEach(service => {
             const option = document.createElement("option");
             option.value = service.id;
             option.textContent = service.name;
@@ -140,7 +141,8 @@ async function loadStaff(salonId, serviceId) {
 
     try {
         const staffList = await fetchStaff(salonId);
-        staffList.forEach(staff => {
+        const staffArray = Array.isArray(staffList) ? staffList : (staffList.staff || staffList.data || []);
+        staffArray.forEach(staff => {
             const option = document.createElement("option");
             option.value = staff.id;
             option.textContent = staff.name;
