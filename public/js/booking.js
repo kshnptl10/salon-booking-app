@@ -109,15 +109,31 @@ async function loadServices(salonId, preselectedServiceId) {
     if (!salonId) return;
 
     try {
-        const services = await fetchServices(salonId);
-        services.forEach(service => {
-            const option = document.createElement("option");
-            option.value = service.id;
-            option.textContent = service.name;
+        // 1. Fetch the raw response from the backend
+        const rawResponse = await fetchServices(salonId);
+        
+        // 🔍 TEMPORARY DEBUG LOG: This will print exactly what your database sent!
+        console.log("🔍 RAW SERVICES RESPONSE:", rawResponse);
 
-            if (preselectedServiceId && service.id == preselectedServiceId) {
+        // 2. Extract the actual array (Checks all common backend response formats)
+        const servicesArray = Array.isArray(rawResponse) 
+            ? rawResponse 
+            : (rawResponse.services || rawResponse.data || rawResponse.result || []);
+
+        // 3. 🔥 CRITICAL FIX: Loop over 'servicesArray', NOT the raw response!
+        servicesArray.forEach(service => {
+            const option = document.createElement("option");
+            
+            // Tell JS to look for either 'id' OR 'service_id'
+            const actualServiceId = service.id || service.service_id;
+            
+            option.value = actualServiceId;
+            option.textContent = service.name || service.service_name;
+
+            // Lock it in if it matches the URL
+            if (preselectedServiceId && actualServiceId == preselectedServiceId) {
                 option.selected = true;
-                loadStaff(salonId, service.id); // Trigger staff load
+                loadStaff(salonId, actualServiceId); // Trigger staff load
             }
             elements.serviceSelect.appendChild(option);
         });
