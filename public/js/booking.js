@@ -118,7 +118,7 @@ async function loadServices(salonId, preselectedServiceId) {
         // 2. Extract the actual array (Checks all common backend response formats)
         const servicesArray = Array.isArray(rawResponse) 
             ? rawResponse 
-            : (rawResponse.services || rawResponse.data || rawResponse.result || []);
+            : (rawResponse.services || rawResponse.salons || rawResponse.data || rawResponse.result || []);
 
         // 3. 🔥 CRITICAL FIX: Loop over 'servicesArray', NOT the raw response!
         servicesArray.forEach(service => {
