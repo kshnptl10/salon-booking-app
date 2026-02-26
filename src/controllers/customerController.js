@@ -103,7 +103,7 @@ exports.getServicesBySalon = async (req, res) => {
 
     try {
         const query = `
-            SELECT id, name, price, duration 
+            SELECT id, name, price, duration_minutes 
             FROM services 
             WHERE salon_id = $1
             ORDER BY name ASC
