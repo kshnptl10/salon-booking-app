@@ -36,9 +36,18 @@ function isInCurrentMonth(dateStr) {
 
 async function loadAppointments() {
   try {
+
+    const staffRes = await fetch("/api/admin/staff");
+    let staffList = [];
+
+    if (staffRes.ok) {
+        const staffData = await staffRes.json();
+        staffList = Array.isArray(staffData) ? staffData : (staffData.staff || staffData.data || []);
+    }
+
     const res = await fetch("/api/admin/today-appointments");
     const data = await res.json();
-
+    
     const container = document.querySelector("#appointments-container");
     container.innerHTML = "";
 
@@ -52,6 +61,14 @@ async function loadAppointments() {
       const formattedDate = new Date(a.appointment_date).toLocaleDateString("en-GB");
       const formattedTime = new Date(`1970-01-01T${a.appointment_time}Z`).toLocaleTimeString("en-US", { hour: '2-digit', minute: '2-digit' });
       if (status === "Completed") return;
+      let staffOptions = `<option value="">-- Assign Staff --</option>`;
+      staffList.forEach(staff => {
+          // If the appointment already has a staff assigned, select them by default
+          const isSelected = (a.staff_id == staff.id || a.staff_name == staff.name) ? "selected" : "";
+          // Note: Check if your db uses 'id' or 'staff_id'
+          const staffId = staff.id || staff.staff_id; 
+          staffOptions += `<option value="${staffId}" ${isSelected}>${staff.name || staff.staff_name}</option>`;
+      });
       const html = `
        <ul class="list-group">
                 <li class="list-group-item border-0 d-flex p-4 mb-2 mt-3 bg-gray-100 border-radius-lg">
@@ -59,7 +76,11 @@ async function loadAppointments() {
                     <h6 class="mb-3 text-sm text-uppercase">${a.customer_name}</h6>
                     <span class="mb-2 text-xs">Service: <span id="service" class="text-dark font-weight-bold ms-sm-2">${a.service_name}</span></span>
                     <span class="mb-2 text-xs">Email Address: <span id="email" class="text-dark ms-sm-2 font-weight-bold">${a.email}</span></span>
-                    <span class="mb-2 text-xs">Staff Name: <span id="staff" class="text-dark ms-sm-2 font-weight-bold">${a.staff_name}</span></span>
+                    <span class="mb-2 text-xs d-flex align-items-center">Staff: 
+    <select id="staff-${a.id}" class="form-select form-select-sm ms-2" style="width: auto; display: inline-block; padding: 2px 24px 2px 8px; font-size: 0.75rem;">
+        ${staffOptions}
+    </select>
+</span>
                     <span class="mb-2 text-xs">Date: <span id="date" class="text-dark ms-sm-2 font-weight-bold">${formattedDate}</span></span>
                     <span class="mb-2 text-xs">Time Slot: <span id="slot" class="text-dark ms-sm-2 font-weight-bold">${formattedTime}</span></span>
                     <span class="mb-2 text-xs">Status: <span id="status-${a.id}" class="text-${getStatusClass(a.status)} font-weight-bold">${a.status}</span></span>
@@ -91,16 +112,37 @@ function getStatusClass(status) {
 } 
 // Make updateStatus global so inline onclick works
 window.updateStatus = async function(id, status) {
+
+  const staffDropdown = document.getElementById(`staff-${id}`);
+  const selectedStaffId = staffDropdown ? staffDropdown.value : null;
+
+  // 2. THE RULE: If changing to Active, they MUST assign staff
+  if (status === 'Active' && !selectedStaffId) {
+      alert("⚠️ Please select a staff member from the dropdown before setting this to Active.");
+      return; // Stops the function
+  }
+
   try {
     const res = await fetch(`/api/admin/appointments/${id}/status`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status })
+      body: JSON.stringify({ status, staff_id: selectedStaffId || null })
     });
 
     const result = await res.json();
     if (result.success) {
       // Remove the appointment from the UI if completed
+      loadAppointments();
+      loadPendingAppointments();
+      loadCompletedAppointments();
+      loadMonthAppointments();
+      
+      loadCompletedAppointmentsMonth();
+      loadPendingAppointmentsMonth();
+      loadTodaySales();
+      loadMonthSales();
+      loadTodayPercent();
+      loadMonthPercent();
       if (status === "Completed") {
         const appointmentDiv = document.querySelector(`#appointment-${id}`);
         if (appointmentDiv) appointmentDiv.remove();
@@ -210,7 +252,7 @@ loadPendingAppointments();
         monthContainer.innerHTML = "<p>No appointments this month.</p>";
         return;
       }
-      monthAppointments.forEach(a => {
+      monthAppointments.slice(0, 3).forEach(a => {
         const formattedDate = new Date(a.appointment_date).toLocaleDateString("en-GB");
         const formattedTime = new Date(`1970-01-01T${a.appointment_time}Z`).toLocaleTimeString("en-US", { hour: '2-digit', minute: '2-digit' });
         const html = `
@@ -229,6 +271,17 @@ loadPendingAppointments();
               </ul>
         `;monthContainer.insertAdjacentHTML("beforeend", html);
       });
+
+      if (monthAppointments.length > 5) {
+        const viewAllHtml = `
+            <div class="text-center mt-4 mb-2">
+                <a href="/manager/appointments.html" class="btn btn-outline-primary btn-sm w-100">
+                    View All ${monthAppointments.length} Appointments </a>
+            </div>
+        `;
+        monthContainer.insertAdjacentHTML("beforeend", viewAllHtml);
+    }
+
     } catch (err) {
       console.error("Error loading month appointments:", err);
     }

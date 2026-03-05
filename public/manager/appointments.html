@@ -114,7 +114,7 @@
                   <hr style="margin:8px 0;">
 
                   <a href="/manager/profile.html" class="d-block mb-2">My Profile</a>
-                  <a href="/logout" class="logout-item">Logout</a>
+                  <a href="/sign-in" class="logout-item">Logout</a>
                 </div>
               </li>
             <!-- END PROFILE -->
@@ -128,21 +128,38 @@
       <div class="row">
         <div class="col-12">
           <div class="d-flex align-items-center justify-content-between">
-            <h4>Services</h4>
+            <h4>All Appointments</h4>
           </div>
             <div class="card-body px-0 pb-2">
               <div class="table-responsive p-0">
                 <table class="table align-items-center justify-content-center mb-0" id="appointments-table">
                   <thead>
-                    <tr>
-                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Customer Name</th>
-                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Email</th>
-                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Service</th>
-                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Staff Member</th>
-                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Date</th>
-                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Time</th>
-                    </tr>
-                  </thead>
+  <tr>
+    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+      Customer Name
+      <input type="text" id="filterCustomer" class="form-control form-control-sm mt-2 border px-2 bg-white" placeholder="Filter name..." style="font-weight: normal; text-transform: none;">
+    </th>
+    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">
+      Email
+      <input type="text" id="filterEmail" class="form-control form-control-sm mt-2 border px-2 bg-white" placeholder="Filter email..." style="font-weight: normal; text-transform: none;">
+    </th>
+    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">
+      Service
+      <input type="text" id="filterService" class="form-control form-control-sm mt-2 border px-2 bg-white" placeholder="Filter service..." style="font-weight: normal; text-transform: none;">
+    </th>
+    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">
+      Staff Member
+      <input type="text" id="filterStaff" class="form-control form-control-sm mt-2 border px-2 bg-white" placeholder="Filter staff..." style="font-weight: normal; text-transform: none;">
+    </th>
+    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">
+      Date
+      <input type="text" id="filterDate" class="form-control form-control-sm mt-2 border px-2 bg-white" placeholder="Filter date..." style="font-weight: normal; text-transform: none;">
+    </th>
+    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">
+      Time
+    </th>
+  </tr>
+</thead>
                   <tbody id="appointments-table"></tbody>
                 </table>
               </div>

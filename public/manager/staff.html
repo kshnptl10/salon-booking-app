@@ -129,7 +129,7 @@
                   <hr style="margin:8px 0;">
 
                   <a href="/manager/profile.html" class="d-block mb-2">My Profile</a>
-                  <a href="/logout" class="logout-item">Logout</a>
+                  <a href="/sign-in" class="logout-item">Logout</a>
                 </div>
               </li>
             <!-- END PROFILE -->
@@ -168,6 +168,8 @@
         </div>
       </div>
        <form id="staff-form">
+        <input type="hidden" name="salon_id" value="1">
+        <input type="hidden" name="category" value="staff">
         <table class="table align-items-center mb-0" id="staff-table">
                   <thead>
                     <tr>
@@ -175,6 +177,7 @@
                       <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Email</th>
                       <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Phone</th>
                       <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Joining Date</th>
+                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Picture</th>
                       <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Status</th>
                     </tr>
                   </thead>
@@ -191,6 +194,9 @@
                       </td>
                       <td>
                         <input type="date" name="joiningdate" placeholder="Joining Date" class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                      </td>
+                      <td>
+                        <input type="file" name="imageFile" class="form-control custom-file-input" accept="image/*">
                       </td>
                       <td>
                         <select class="form-select" aria-label="Default select example" name="status" class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7" >

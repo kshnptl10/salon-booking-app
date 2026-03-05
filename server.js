@@ -1,4 +1,5 @@
 // server.js
+require('dotenv').config();
 if (process.env.NODE_ENV !== 'production') {
     require('dotenv').config();
 }
@@ -70,6 +71,7 @@ app.use((req, res, next) => {
     next();
 });
 
+
 // --- 4. API & Route Mounting ---
 app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
@@ -80,7 +82,7 @@ app.use('/api', searchRoutes);
 
 // Handles root-level auth like /sign-in, /logout
 app.use('/', authRoutes); 
-
+app.use(express.static(path.join(__dirname, 'public')));
 // --- 5. Protected Page Handlers ---
 // Customer Dashboard
 app.get('/c_dashboard', checkCustomerAuthentication, (req, res) => {

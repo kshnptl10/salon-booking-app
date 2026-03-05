@@ -1,107 +1,109 @@
 document.addEventListener("DOMContentLoaded", () => {
   const servicesForm = document.getElementById("services-form");
   const servicesTable = document.querySelector("#services-table tbody");
- const images = [
-  '../images/services/s1.png',
-  '../images/services/s2.png',
-  '../images/services/s3.png',
-  '../images/services/s4.png',
-  '../images/services/s5.png',
-  '../images/services/s6.png',
-  '../images/services/s7.png',
-  '../images/services/s8.png',
-  '../images/services/s9.png',
-  '../images/services/s10.png'
-  ];
 
-  
-async function loadLoggedUser() {
-  try {
-    const res = await fetch('/api/me');
-    if (!res.ok) {
-      // not logged in; optionally redirect to sign-in
-      console.warn('Not authenticated (api/me)', res.status);
-      return;
+  async function loadLoggedUser() {
+    try {
+      const res = await fetch('/api/me');
+      if (!res.ok) return;
+      const user = await res.json();
+      const nameEl = document.getElementById('profileName');
+      if (nameEl && user.name) nameEl.textContent = user.name;
+    } catch (err) {
+      console.error('Error loading logged user', err);
     }
-    const user = await res.json();
-    // element where you want to show name
-    const nameEl = document.getElementById('profileName');
-    if (nameEl && user.name) {
-      nameEl.textContent = user.name;
-    }
-
-    // optionally show role
-    const roleEl = document.getElementById('profileRole');
-    if (roleEl && user.role) {
-      roleEl.textContent = user.role;
-    }
-  } catch (err) {
-    console.error('Error loading logged user', err);
   }
-}
 
   loadLoggedUser();
 
+  // --- 1. LOAD SERVICES (Using dynamic database images) ---
   async function loadServices() {
     const res = await fetch("/api/admin/services");
     const data = await res.json();
-    servicesTable.innerHTML = data.map((s, index) => `
     
-                    <tr>
-                      <td>
-                        <div class="d-flex px-2">
-                          <div>
-                            <img src="${images[index % images.length]}" class="avatar avatar-sm rounded-circle me-2" alt="spotify">
-                          </div>
-                          <div class="my-auto">
-                            <h6 class="mb-0 text-sm">${s.name}</h6>
-                          </div>
-                        </div>
-                      </td>
-                      <td>
-                        <p class="text-sm font-weight-bold mb-0">${s.description || ''}</p>
-                      </td>
-                      <td>
-                        <span class="text-xs font-weight-bold">${s.duration_minutes || 0} min</span>
-                      </td>
-                      <td class="align-middle text-center">
-                        <div class="d-flex align-items-center justify-content-center">
-                          <span class="me-2 text-xs font-weight-bold">${s.price || 0}</span>
-                          
-                        </div>
-                      </td>
-                      <td class="align-middle">
-                        <button onclick="deleteService(${s.id})" class="btn btn-link text-secondary mb-0">
-                          <i class="fa fa-ellipsis-v text-xs">Delete</i>
-                        </button>
-                      </td>
-                    </tr>`).join("");
+    servicesTable.innerHTML = data.map((s) => {
+      // ✅ USE REAL IMAGE: Use DB path or a placeholder if empty
+      const imageUrl = s.image_file ? s.image_file : '../images/placeholder.png';
+      return `
+        <tr data-id="${s.id}">
+          <td>
+            <div class="d-flex px-2">
+              <div>
+                <img src="${imageUrl}" class="avatar avatar-sm rounded-circle me-2" style="object-fit: cover;" alt="${s.name}">
+              </div>
+              <div class="my-auto">
+                <h6 class="mb-0 text-sm service-name" contenteditable="true">${s.name}</h6>
+              </div>
+            </div>
+          </td>
+          <td>
+            <p class="text-sm font-weight-bold mb-0 service-desc" contenteditable="true">${s.description || ''}</p>
+          </td>
+          <td>
+            <span class="text-xs font-weight-bold service-duration" contenteditable="true">${s.duration_minutes || 0}</span> <span class="text-xs">min</span>
+          </td>
+          <td class="align-middle text-center">
+            <span class="text-xs font-weight-bold service-price" contenteditable="true">${s.price || 0}</span>
+          </td>
+          <td class="align-middle">
+             <button onclick="updateService(${s.id})" class="btn btn-link text-info mb-0">Save</button>
+             <button onclick="deleteService(${s.id})" class="btn btn-link text-danger mb-0">Delete</button>
+          </td>
+        </tr>`;
+    }).join("");
   }
 
+  // --- 2. ADD SERVICE (With Multipart/FormData Support) ---
   servicesForm.addEventListener("submit", async e => {
     e.preventDefault();
-    const formData = Object.fromEntries(new FormData(servicesForm).entries());
-    formData.duration = parseInt(formData.duration);
-    await fetch("/api/admin/services", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(formData)
-    });
-    servicesForm.reset();
-    loadServices();
+
+    const formData = new FormData(servicesForm);
+    
+    // ✅ Logic: Add category so Multer knows to use the 'services' folder
+    formData.append("category", "services");
+
+    try {
+      const res = await fetch("/api/admin/services", {
+        method: "POST",
+        body: formData // Send as multipart/form-data
+      });
+
+      if (res.ok) {
+        servicesForm.reset();
+        loadServices();
+      } else {
+        const errData = await res.json();
+        alert("Error: " + errData.message);
+      }
+    } catch (err) {
+      console.error("Error creating service", err);
+    }
   });
 
+  // --- 3. UPDATE SERVICE (Fixed targeting) ---
   window.updateService = async (id) => {
-    const row = [...servicesTable.rows].find(r => r.cells[0].innerText == id);
-    const name = row.cells[1].innerText;
-    const description = row.cells[2].innerText;
-    const duration = parseInt(row.cells[3].innerText);
-    await fetch(`/api/services/${id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, description, duration })
-    });
-    loadServices();
+    const row = document.querySelector(`tr[data-id="${id}"]`);
+    if (!row) return;
+
+    const name = row.querySelector('.service-name').innerText.trim();
+    const description = row.querySelector('.service-desc').innerText.trim();
+    const duration = parseInt(row.querySelector('.service-duration').innerText);
+    const price = parseFloat(row.querySelector('.service-price').innerText);
+
+    try {
+      const res = await fetch(`/api/admin/services/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, description, duration, price })
+      });
+      
+      if(res.ok) {
+        alert("Service updated!");
+        loadServices();
+      }
+    } catch (err) {
+      console.error("Update failed", err);
+    }
   }
 
   window.deleteService = async (id) => {

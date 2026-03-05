@@ -829,22 +829,38 @@ exports.getAllStaff = async (req, res) => {
 };
 
 exports.createStaff = async (req, res) => {
-    const { name, email, phone, is_available } = req.body;
+    // 1. Get the text fields from req.body
+    const { name, email, phone, joining_date, is_available } = req.body;
     const { salonId, userRole } = req.session; 
     
-    // Safety check: Managers must have a salonId
-    if (userRole !== 'superadmin' && !salonId) return res.status(403).json({message: "No Salon ID found for user"});
+    // Safety check
+    if (userRole !== 'superadmin' && !salonId) {
+        return res.status(403).json({message: "No Salon ID found for user"});
+    }
+
+    // 2. Build the image URL from req.file (NOT req.body!)
+    let dbImageUrl = null;
+    if (req.file) {
+        // If Multer successfully grabbed the file, construct the path to save in the DB
+        dbImageUrl = `/images/salon_${salonId}/staff/${req.file.filename}`;
+    }
+
+    // 3. Safely convert FormData checkbox value to a real Boolean for Postgres
+    const isAvailableBool = (is_available === 'on' || is_available === 'true');
 
     try {
-        // Only insert salon_id if it exists (for superadmin it might be null if creating global staff? 
-        // Or superadmin should select a salon. For now, we assume simple manager creation)
+
+        console.log("Attempting DB Insert with:", {
+            name, email, phone, isAvailableBool, dbImageUrl, salonId
+        });
         await pool.query(
-            "INSERT INTO staff (name, email, phone, is_available, salon_id) VALUES ($1,$2,$3,$4,$5)", 
-            [name, email, phone, is_available || false, salonId]
+            "INSERT INTO staff (name, email, phone, joiningdate, is_available, image_file, salon_id) VALUES ($1,$2,$3,$4,$5,$6,$7)", 
+            [name, email, phone, joining_date, isAvailableBool, dbImageUrl, salonId]
         );
-        res.status(201).json({ message: 'Staff created' });
+        res.status(201).json({ message: 'Staff created successfully' });
     } catch (err) {
-        console.error(err);
+        // 🔥 Pro-tip: Log the actual error so you can see EXACTLY what Postgres is complaining about
+        console.error("Database Insert Error:", err.message); 
         res.status(500).json({ message: 'Error creating staff' });
     }
 };
@@ -920,10 +936,18 @@ exports.createService = async (req, res) => {
 
     if (userRole !== 'superadmin' && !salonId) return res.status(403).json({message: "No Salon ID found"});
 
+    const finalSalonId = salonId;
+
+    let dbImageUrl = null;
+    if (req.file) {
+        // Path matches our new structure: /images/salon_1/services/filename.jpg
+        dbImageUrl = `/images/salon_${finalSalonId}/services/${req.file.filename}`;
+    }
+
     try {
         await pool.query(
-            "INSERT INTO services (name, description, duration_minutes, price, salon_id) VALUES ($1,$2,$3,$4,$5)", 
-            [name, description, duration, price, salonId]
+            "INSERT INTO services (name, description, duration_minutes, price, salon_id, image_file) VALUES ($1,$2,$3,$4,$5,$6)", 
+            [name, description, duration, price, finalSalonId, dbImageUrl]
         );
         res.status(201).json({ message: 'Service created' });
     } catch (err) {

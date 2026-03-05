@@ -6,8 +6,8 @@ const adminController = require('../controllers/adminController');
 const { requireAdmin, requireSuperadmin } = require('../middleware/auth');
 const reportController = require('../controllers/reportController');
 const settingsController = require('../controllers/settingsController');
- // Check your path
 const { verifyToken } = require('../middleware/auth');
+const upload = require('../utils/uploadConfig');
 
 // All Admin APIs require 'admin' role or higher
 router.use(requireAdmin); 
@@ -53,15 +53,16 @@ router.get("/appointments", adminController.getAllAppointments);
 
 // --- 3. Staff CRUD ---
 router.get("/staff", adminController.getAllStaff);
-router.post("/staff", adminController.createStaff);
+router.post("/staff", upload.single('imageFile'), adminController.createStaff);
 router.put("/staff/:id", adminController.updateStaff);
 router.delete("/staff/:id", adminController.deleteStaff);
 
 // --- 4. Services CRUD ---
 router.get("/services", adminController.getAllServices);
-router.post("/services", adminController.createService);
+router.post("/services", upload.single('imageFile'), adminController.createService);
 router.put("/services/:id", adminController.updateService);
 router.delete("/services/:id", adminController.deleteService);
+
 
 // --- 5. Time Slots CRUD ---
 router.get("/timeslots", adminController.getAllTimeSlots);

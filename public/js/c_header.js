@@ -35,6 +35,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 });
 
+document.addEventListener("DOMContentLoaded", () => {
+    const hamburgerBtn = document.getElementById("hamburgerBtn");
+    const sidebar = document.querySelector(".sidebar");
+
+    // Check if both elements exist on the page before adding the click listener
+    if (hamburgerBtn && sidebar) {
+        hamburgerBtn.addEventListener("click", () => {
+            // This adds/removes the "active" class every time you click
+            sidebar.classList.toggle("active");
+        });
+    }
+});
 
 document.addEventListener('DOMContentLoaded', () => {
     // Target the profile bubble as the click area

@@ -780,3 +780,65 @@ footer {
         justify-content: center;
     }
 }
+
+.brand-container {
+    display: flex;
+    align-items: center;
+    gap: .5px; /* Adds perfect spacing between the image and text */
+    text-decoration: none; /* Removes any default underline */
+}
+
+/* Sizing the Logo */
+.brand-logo {
+    height: 80px; /* Adjust this number to fit your navbar perfectly */
+    width: auto;
+    border-radius: 4px; /* Optional: rounds the corners of your logo slightly */
+    object-fit: contain;
+}
+
+/* Styling the App Name */
+.brand-name {
+    font-size: 1.5rem; /* Makes the text a bit larger */
+    font-weight: 700; /* Makes it bold */
+    color: #ffffff; /* Change this to match your app's primary color scheme */
+    letter-spacing: 0.5px;
+}
+
+/* 🔥 MOBILE SIDEBAR BEHAVIOR */
+@media (max-width: 768px) {
+    /* 1. Show the hamburger button on mobile */
+    .hamburger {
+        display: block; 
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        cursor: pointer;
+    }
+
+    /* 2. Hide the sidebar off the left edge of the screen */
+    .sidebar {
+        position: fixed;
+        top: 0;
+        left: -250px; /* Hides it completely off-screen */
+        width: 250px;
+        height: 100vh;
+        background-color: #0099ff; /* Make sure this matches your theme */
+        box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+        z-index: 1000; /* Keeps it on top of the main content */
+        transition: left 0.3s ease-in-out; /* The smooth sliding animation */
+        padding-top: 80px; /* Pushes links down so they aren't hidden under the header */
+    }
+
+    /* 3. The class JS adds when clicked: Slides the sidebar in! */
+    .sidebar.active {
+        left: 0; 
+    }
+}
+
+/* 🔥 DESKTOP BEHAVIOR (Hide hamburger, show sidebar normally) */
+@media (min-width: 769px) {
+    .hamburger {
+        display: none;
+    }
+}
+
