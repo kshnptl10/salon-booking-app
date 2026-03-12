@@ -66,6 +66,9 @@ document.addEventListener("DOMContentLoaded", () => {
           <td>
             <span class="text-xs font-weight-bold">${formattedTime}</span>
           </td>
+          <td>
+            <span class="text-xs font-weight-bold">${a.status}</span>
+          </td>
         </tr>
       `;
     }).join("");
