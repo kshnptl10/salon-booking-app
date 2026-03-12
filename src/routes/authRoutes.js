@@ -10,7 +10,6 @@ router.get('/sign-in', authController.getSignInPage);
 
 // Admin & Superadmin Signup Pages
 router.get('/signup-admin', authController.getAdminSignupPage);
-router.get('/signup-superadmin', authController.getSuperadminSignupPage);
 
 
 // --- 2. AUTH FORM SUBMISSIONS ---
@@ -25,7 +24,6 @@ router.get('/c_logout', authController.logoutCustomer);
 
 // Signup Submissions
 router.post('/signup-admin', authController.postAdminSignup);
-router.post('/signup-superadmin', authController.postSuperadminSignup);
 router.post('/signup-customer', authController.signupCustomer);
 
 // Create Manager (Protected API)
