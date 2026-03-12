@@ -151,64 +151,66 @@ function closeRescheduleModal() {
 }
 
 async function initiatePayment(appointmentId, amount) {
-    // 1. Create Order on Backend
-    const response = await fetch('/api/appointments/create-order', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount: amount, appointmentId: appointmentId })
-    });
-    
-    const orderData = await response.json();
-
-    if (!orderData.success) {
-        alert("Error creating order: " + orderData.message);
-        return;
-    }
-
-    // 2. Open Razorpay Checkout
-    const options = {
-        "key": orderData.key_id, 
-        "amount": orderData.amount, 
-        "currency": "INR",
-        "name": "BookNStyle",
-        "description": "Appointment Payment",
-        "order_id": orderData.order_id, 
-        "handler": async function (response) {
-            // 3. On Success: Verify Payment on Backend
-            const verifyRes = await fetch('/api/appointments/verify-payment', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    razorpay_order_id: response.razorpay_order_id,
-                    razorpay_payment_id: response.razorpay_payment_id,
-                    razorpay_signature: response.razorpay_signature,
-                    appointmentId: appointmentId
-                })
-            });
-
-            const verifyData = await verifyRes.json();
-            
-            if (verifyData.success) {
-                alert("Payment Successful! Booking Confirmed.");
-                window.location.reload(); // Or redirect to dashboard
-            } else {
-                alert("Payment Verification Failed!");
-            }
-        },
-        "prefill": {
-            "name": "Customer Name", // Optional: Get from session if possible
-            "email": "customer@example.com",
-            "contact": "9999999999"
-        },
-        "theme": {
-            "color": "#3399cc"
+    try {
+        const response = await fetch('/api/payment/create-order', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'same-origin', // 🔥 Needed for secure payment session
+            body: JSON.stringify({ amount: amount, appointmentId: appointmentId })
+        });
+        
+        const contentType = response.headers.get("content-type");
+        if (!contentType || !contentType.includes("application/json")) {
+            const errorText = await response.text();
+        throw new Error(`Server returned non-JSON response: ${errorText.substring(0, 100)}...`);
         }
-    };
 
-    const rzp1 = new Razorpay(options);
-    rzp1.on('payment.failed', function (response){
-        alert("Payment Failed: " + response.error.description);
-    });
-    
-    rzp1.open();
+        const orderData = await response.json();
+        if (!orderData.success) throw new Error(orderData.message|| "Failed to create Razorpay order");
+
+        const options = {
+            "key": orderData.key_id,
+            "amount": orderData.amount,
+            "currency": "INR",
+            "name": "BookNStyle",
+            "description": "Service Payment",
+            "order_id": orderData.order_id,
+            "handler": async function (response) {
+                const verifyRes = await fetch('/api/payment/verify-payment', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'same-origin',
+                    body: JSON.stringify({
+                        razorpay_order_id: response.razorpay_order_id,
+                        razorpay_payment_id: response.razorpay_payment_id,
+                        razorpay_signature: response.razorpay_signature,
+                        appointmentId: appointmentId
+                    })
+                });
+
+                const verifyData = await verifyRes.json();
+                if (verifyData.success) {
+                    alert("Payment Successful! Booking Confirmed.");
+                    window.location.href = "c_dashboard.html"; 
+                } else {
+                    alert("Payment Verification Failed. Please contact support.");
+                }
+            },
+            "prefill": { "contact": "9999999999" }, 
+            "theme": { "color": "#3399cc" },
+            "modal": {
+                "ondismiss": function() {
+                    alert('Payment cancelled. Your booking is saved as Pending.');
+                    window.location.href = "c_myappointments.html"; 
+                }
+            }
+        };
+
+        const rzp1 = new Razorpay(options);
+        rzp1.open();
+
+    } catch (error) {
+        console.error("Payment Error:", error);
+        alert("Could not initialize payment: " + error.message);
+    }
 }

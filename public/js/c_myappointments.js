@@ -91,7 +91,7 @@ function renderAppointments(appointments) {
         if (a.payment_status === 'Unpaid' && diffInHours > 0 && (a.status === 'Pending' || a.status === 'Confirmed')) {
             paymentButtonHtml = `
                 <div style="margin-top: 10px;">
-                    <button class="btn-pay" style="background-color: #28a745; color: white;" onclick="initiatePayment(${a.id}, ${a.total_amount})">
+                    <button class="btn-pay" style="background-color: #28a745; color: white;" onclick="handleRepay('${a.id}', ${a.total_amount})">
                         Pay Now (₹${a.total_amount})
                     </button>
                 </div>
@@ -114,6 +114,14 @@ function renderAppointments(appointments) {
         </div>
         `;
     }).join('');
+}
+
+async function handleRepay(appointmentId, amount) {
+    console.log(`Restarting payment for Appointment: ${appointmentId}`);
+    
+    // Call the same function you used in your booking.js
+    // Ensure this function is imported or available in this file
+    await initiatePayment(appointmentId, amount);
 }
 
 // 3. ✅ NEW: Function to Render Pagination Buttons

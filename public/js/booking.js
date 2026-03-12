@@ -293,8 +293,14 @@ async function initiatePayment(appointmentId, amount) {
             body: JSON.stringify({ amount: amount, appointmentId: appointmentId })
         });
         
+        const contentType = response.headers.get("content-type");
+        if (!contentType || !contentType.includes("application/json")) {
+            const errorText = await response.text();
+        throw new Error(`Server returned non-JSON response: ${errorText.substring(0, 100)}...`);
+        }
+
         const orderData = await response.json();
-        if (!orderData.success) throw new Error(orderData.message);
+        if (!orderData.success) throw new Error(orderData.message|| "Failed to create Razorpay order");
 
         const options = {
             "key": orderData.key_id,
