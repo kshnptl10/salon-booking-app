@@ -76,4 +76,7 @@ router.delete('/admins/:id', requireSuperadmin, adminController.deleteAdmin);
 
 router.get('/api/admin/salons', adminController.getAllSalons);
 
+router.post("/offline-entry", adminController.createOfflineEntry);
+router.get("/offline-total", adminController.getTodayOfflineTotal);
+
 module.exports = router;

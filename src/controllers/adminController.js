@@ -1005,6 +1005,50 @@ exports.deleteService = async (req, res) => {
     }
 };
 
+exports.createOfflineEntry = async (req, res) => {
+    const { staff_id, service_id, final_price } = req.body;
+    const { salonId } = req.session;
+
+    try {
+        // We insert this directly as a 'Completed' appointment
+        const query = `
+           INSERT INTO appointments 
+            (salon_id, staff_id, service_id, total_amount, status_id, appointment_date, appointment_time, is_offline, payment_status) 
+            VALUES ($1, $2, $3, $4, 3, CURRENT_DATE, CURRENT_TIME, true, 'Paid')
+             `;
+        
+        // Note: Using a dummy service_id or 0 if you don't want to specify a service
+        const params = [salonId, staff_id, service_id, final_price];
+
+        await pool.query(query, params);
+
+        res.status(201).json({ 
+            success: true, 
+            message: 'Offline entry added to daily sales' 
+        });
+    } catch (err) {
+        console.error("Error creating offline entry:", err);
+        res.status(500).json({ message: 'Database error while saving entry' });
+    }
+};
+
+// In adminController.js
+exports.getTodayOfflineTotal = async (req, res) => {
+    try {
+        const result = await pool.query(
+            `SELECT SUM(total_amount) as total 
+             FROM appointments 
+             WHERE salon_id = $1 
+             AND is_offline = true 
+             AND appointment_date = CURRENT_DATE`,
+            [req.session.salonId]
+        );
+        res.json({ total: result.rows[0].total || 0 });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
 // ==========================================================
 // E. ADMIN MANAGEMENT (Only for Superadmin)
 // ==========================================================

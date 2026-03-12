@@ -56,7 +56,11 @@ document.addEventListener("DOMContentLoaded", () => {
             <p class="text-xs font-weight-bold mb-0 staff-phone" contenteditable="true">${s.phone || ''}</p>
           </td>
           <td class="align-middle text-center text-sm">
-            <span class="badge badge-sm bg-gradient-success">${s.status || 'Active'}</span>
+            <select class="form-select staff-status-select ${s.is_available ? 'text-success' : 'text-danger'}" style="border:none; background:transparent; font-weight:bold; font-size:0.75rem;"
+              onchange="this.className = 'form-select staff-status-select ' + (this.value === 'true' ? 'text-success' : 'text-danger')">
+              <option value="true" ${s.is_available ? 'selected' : ''}>Active</option>
+              <option value="false" ${!s.is_available ? 'selected' : ''}>Inactive</option>
+            </select>
           </td>
           <td class="align-middle text-center">
             <span class="text-secondary text-xs font-weight-bold">${formattedDate}</span>
@@ -117,15 +121,15 @@ document.addEventListener("DOMContentLoaded", () => {
     const name = row.querySelector('.staff-name').innerText.trim();
     const email = row.querySelector('.staff-email').innerText.trim();
     const phone = row.querySelector('.staff-phone').innerText.trim();
-
-    console.log("Sending Update:", { id, name, email, phone });
+    const is_available = row.querySelector('.staff-status-select').value === 'true';
+    console.log("Sending Update:", { id, name, email, phone, is_available });
     
     try {
       // ✅ FIX 1: Change URL to /api/admin/staff
       const res = await fetch(`/api/admin/staff/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, phone })
+        body: JSON.stringify({ name, email, phone, is_available })
       });
       
       // ✅ FIX 2: Only alert and reload if the server actually updated the DB

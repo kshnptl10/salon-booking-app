@@ -318,30 +318,30 @@ setInterval(updateDateTime, 1000);
   // ---------- STAFF ----------
 const staffContainer = document.getElementById("staff-container"); 
 
-async function loadStaff() {
-  try {
-    const res = await fetch("/api/admin/staff");
-    const data = await res.json();
+// async function loadStaff() {
+//   try {
+//     const res = await fetch("/api/admin/staff");
+//     const data = await res.json();
 
-    staffContainer.innerHTML = data.map(s => `
+//     staffContainer.innerHTML = data.map(s => `
 
-      <li class="list-group-item border-0 d-flex justify-content-between ps-0 mb-2 border-radius-lg">
-          <div class="d-flex flex-column">
-            <h6 class="mb-1 text-dark font-weight-bold text-sm">${s.name}</h6>
-            <span class="text-xs">${s.phone || ''}</span>
-          </div>
-          <div class="d-flex align-items-center text-sm">
-            <span class="text-dark font-weight-bold">$180</span>
-          </div>
-        </li>
+//       <li class="list-group-item border-0 d-flex justify-content-between ps-0 mb-2 border-radius-lg">
+//           <div class="d-flex flex-column">
+//             <h6 class="mb-1 text-dark font-weight-bold text-sm">${s.name}</h6>
+//             <span class="text-xs">${s.phone || ''}</span>
+//           </div>
+//           <div class="d-flex align-items-center text-sm">
+//             <span class="text-dark font-weight-bold">$180</span>
+//           </div>
+//         </li>
 
-    `).join('');
-  } catch (err) {
-    console.error("Error loading staff:", err);
-  }
-}
+//     `).join('');
+//   } catch (err) {
+//     console.error("Error loading staff:", err);
+//   }
+// }
 // Load staff on page load
-loadStaff();
+//loadStaff();
 
   // ---------- SERVICES ----------
   const servicesForm = document.getElementById("services-form");
@@ -422,8 +422,6 @@ async function loadPendingAppointmentsMonth() {
     if (el) el.textContent = '—';
   }
 }
-
-
 async function loadTodayPercent() {
   const percentEl = document.getElementById('todayPercent');
   const arrowEl = document.getElementById('todayArrow');
@@ -474,7 +472,6 @@ async function loadTodayPercent() {
     arrowEl.classList.add('text-warning');
   }
 }
-
 async function loadMonthPercent() {
   const el = document.getElementById('monthPercent');
   if (!el) return;
@@ -513,6 +510,147 @@ async function loadMonthPercent() {
   }
 }
 
+async function loadQuickEntryList() {
+    const container = document.getElementById('staff-entry-list');
+    try {
+        // Fetch both staff and services
+        const [staffRes, serviceRes] = await Promise.all([
+            fetch('/api/admin/staff'),
+            fetch('/api/admin/services')
+        ]);
+        
+        const staff = await staffRes.json();
+        const services = await serviceRes.json();
+
+        container.innerHTML = staff.map(s => `
+            <li class="list-group-item border-0 d-flex flex-column ps-0 mb-4 border-radius-lg">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <div class="d-flex align-items-center">
+                        <div class="avatar avatar-sm me-3 border-radius-lg shadow-sm">
+                            <img src="${s.image_url || './images/avatar.png'}" class="w-100">
+                        </div>
+                        <div class="d-flex flex-column">
+                            <h6 class="mb-0 text-dark font-weight-bold text-sm">${s.name}</h6>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="d-flex align-items-center gap-2">
+                    <div class="input-group input-group-static" style="flex: 2;">
+                        <select class="form-control form-control-sm" id="service-select-${s.id}" 
+                                onchange="updatePriceFromService(${s.id}, this)">
+                            <option value="" selected disabled>Select Service</option>
+                            ${services.map(ser => `<option value="${ser.id}" data-price="${ser.price}">${ser.name}</option>`).join('')}
+                        </select>
+                    </div>
+
+                    <div class="input-group input-group-outline" style="flex: 1;">
+                        <input type="number" id="amt-${s.id}" class="form-control form-control-sm text-center" placeholder="₹">
+                    </div>
+
+                    <button onclick="saveOfflineEntry(${s.id})" class="btn btn-icon-only btn-rounded btn-outline-success mb-0">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
+            </li>
+        `).join('');
+    } catch (err) {
+        console.error("Error loading quick entry list", err);
+    }
+}
+
+window.updatePriceFromService = (staffId, selectElement) => {
+    const selectedOption = selectElement.options[selectElement.selectedIndex];
+    const price = selectedOption.getAttribute('data-price');
+    
+    const amountInput = document.getElementById(`amt-${staffId}`);
+    if (price) {
+        amountInput.value = price;
+        // Trigger Material UI focus animation
+        amountInput.parentElement.classList.add('is-focused');
+        amountInput.parentElement.classList.add('is-filled');
+    }
+};
+
+window.saveOfflineEntry = async (staffId) => {
+    const amountInput = document.getElementById(`amt-${staffId}`);
+    const serviceSelect = document.getElementById(`service-select-${staffId}`);
+    const amount = amountInput.value;
+    const serviceId = serviceSelect.value;
+
+    if (!serviceId) {
+        alert("Please select a service first.");
+        return;
+    }
+
+    try {
+        const res = await fetch('/api/admin/offline-entry', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                staff_id: staffId,
+                service_id: serviceId, // ✅ Now sending service ID
+                final_price: amount,
+                customer_name: "Walk-in"
+            })
+        });
+
+        if (res.ok) {
+            // Success animation code from previous step...
+            amountInput.value = '';
+            serviceSelect.selectedIndex = 0;
+            alert("Entry recorded successfully!");
+
+            updateOfflineTotalUI(amount);
+            amountInput.value = '';
+            serviceSelect.selectedIndex = 0;
+        }
+    } catch (error) {
+        console.error("Error saving entry", error);
+    }
+};
+
+function updateOfflineTotalUI(newAmount) {
+    const totalElement = document.getElementById('offline-total-display');
+    
+    // Remove the '₹' symbol and convert to number
+    let currentTotal = parseFloat(totalElement.innerText.replace('₹', '')) || 0;
+    
+    // Add the new entry to the total
+    let updatedTotal = currentTotal + parseFloat(newAmount);
+    
+    // Update the text with the new sum
+    totalElement.innerText = `₹${updatedTotal.toFixed(2)}`;
+    
+    // Optional: Add a small "glow" effect so the user notices the change
+    totalElement.classList.add('text-success');
+    setTimeout(() => totalElement.classList.remove('text-success'), 2000);
+}
+
+async function initOfflineTotal() {
+    const res = await fetch('/api/admin/offline-total');
+    const data = await res.json();
+    document.getElementById('offline-total-display').innerText = `₹${data.total}`;
+}
+
+// Call this when the page loads
+async function initOfflineTotal() {
+    const res = await fetch('/api/admin/offline-total');
+    const data = await res.json();
+    document.getElementById('offline-total-display').innerText = `₹${data.total}`;
+}
+
+// Call this when the page loads
+async function initOfflineTotal() {
+    const res = await fetch('/api/admin/offline-total');
+    const data = await res.json();
+    document.getElementById('offline-total-display').innerText = `₹${data.total}`;
+}
+
+// Call this when the page loads
+initOfflineTotal();
+// Call this when the page loads
+loadQuickEntryList();
 loadMonthPercent();
 loadTodayPercent();
 loadTodaySales();
