@@ -72,10 +72,7 @@ exports.postAdminSignup = (req, res) => handleSignup(req, res, 'admin');
 
 exports.createSalonManager = (req, res) => handleSignup(req, res, 'manager');
 
-exports.postSuperadminSignup = (req, res) => handleSignup(req, res, 'superadmin');
-
 exports.getAdminSignupPage = (req, res) => res.sendFile(path.join(__dirname, '../../public/signup_admin.html'));
-exports.getSuperadminSignupPage = (req, res) => res.sendFile(path.join(__dirname, '../../public/signup_superadmin.html'));
 
 exports.getSignInPage = (req, res) => {
     res.sendFile(path.join(__dirname, '../../public/manager/sign-in.html'));
@@ -115,7 +112,6 @@ exports.loginUser = async (req, res) => {
 
         // 3. Define Redirects
         const redirectMap = {
-            'superadmin': '/superadmin-dashboard',
             'admin': '/admin/dashboard',  
             'manager': '/dashboard' 
         };
@@ -133,7 +129,7 @@ exports.loginUser = async (req, res) => {
 };
 exports.createSalonManager = async (req, res) => {
     // 1. SECURITY CHECK: Only Superadmin can perform this action
-    if (!req.session || req.session.userRole !== 'superadmin') {
+    if (!req.session || (req.session.userRole !== 'admin' && req.session.userRole !== 'manager')) {
         return res.status(403).json({ message: "Unauthorized: Only Super Admin can create managers." });
     }
 
