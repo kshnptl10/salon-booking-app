@@ -9,6 +9,7 @@ const session = require('express-session');
 const path = require('path');
 
 // Import configuration and routes
+const cron = require('node-cron');
 const pool = require('./src/config/db');
 const authRoutes = require('./src/routes/authRoutes');
 const adminRoutes = require('./src/routes/adminRoutes');
@@ -116,6 +117,27 @@ app.use((err, req, res, next) => {
     res.status(500).json({ success: false, message: 'Something went wrong on the server!' });
 });
 
+cron.schedule('* * * * *', async () => {
+    try {
+        const autoFinishQuery = `
+            UPDATE appointments a
+            SET status_id = (SELECT id FROM appointment_status WHERE status_name = 'Completed')
+            FROM services s, appointment_status st
+            WHERE a.service_id = s.id
+              AND a.status_id = st.id
+              AND st.status_name = 'Active'
+              AND (a.actual_start_time + (s.duration * interval '1 minute')) <= NOW()
+        `;
+
+        const result = await pool.query(autoFinishQuery);
+        
+        if (result.rowCount > 0) {
+            console.log(`[Cron] Auto-completed ${result.rowCount} appointments.`);
+        }
+    } catch (err) {
+        console.error("[Cron Error]:", err.message);
+    }
+});
 
 // --- 9. Start Server ---
 app.listen(PORT, () => {

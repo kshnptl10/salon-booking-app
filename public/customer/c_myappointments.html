@@ -7,7 +7,24 @@
     <link rel="icon" type="image/png" href="../images/logo_new.png">  
     <link rel="stylesheet" type="text/css" href="../css/style_hyp.css"/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-    
+    <style>
+            /* Force the filter items to stay in a line and not stretch */
+        #minimalFilter .d-flex {
+            display: flex !important;
+            flex-direction: row !important; /* Forces horizontal */
+            justify-content: flex-end !important; /* Forces right alignment */
+        }
+
+        #minimalFilter input, 
+        #minimalFilter select {
+            display: inline-block !important;
+            width: 100%; /* Takes full width of the parent 'div' wrappers (160px/180px) */
+        }
+
+        #minimalFilter .btn {
+            white-space: nowrap; /* Prevents button text from wrapping */
+        }
+    </style>
 </head>
 <body class="dashboard">
     <header>
@@ -72,16 +89,6 @@
         </aside>
     <main class="main">
 
-
-        <!--<div class="section-header">
-        
-        <h2 class="section-title mb-0">My Appointments</h2>
-        
-        <a href="/customer/booking.html" class="btn btn-primary">
-            <i class="fas fa-calendar-plus me-2"></i> Book New Appointment
-        </a>
-    </div> -->
-
      <div class="appointments-section">
     
     <div class="appointments-header">
@@ -91,6 +98,27 @@
             <i class="fas fa-calendar-plus"></i> Book New Appointment
         </a>
     </div>   
+    
+    <div class="d-flex justify-content-end mb-2">
+        <button class="btn btn-outline-secondary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#minimalFilter">
+            <i class="fas fa-filter"></i>
+        </button>
+    </div>
+
+    <div class="collapse" id="minimalFilter">
+        <div class="d-flex justify-content-end align-items-center mb-3" style="gap: 10px;">
+            <div style="width: 160px;">
+                <input type="date" id="filterDate" class="form-control form-control-sm">
+            </div>
+            <div style="width: 180px;">
+                <select id="filterService" class="form-select form-select-sm">
+                    <option value="">All Services</option>
+                </select>
+            </div>
+            <button id="btnFilter" class="btn btn-book-new">Apply</button>
+        </div>
+    </div>
+    
     <div class="appointment" id="appointmentList"></div>
     <div id="pagination-controls" style="margin-top: 20px; text-align: center;">
     </div>
@@ -139,7 +167,6 @@
      <script src="../js/c_myappointments.js"></script>
      <script src="../js/script.js"></script>
       <script src="../js/c_header.js"></script>
-      
       <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 </body>
 </html>

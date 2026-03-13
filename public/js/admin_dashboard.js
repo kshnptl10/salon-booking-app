@@ -90,6 +90,7 @@ async function loadAppointments() {
                        <a href="#" onclick="updateStatus(${a.id}, 'Completed'); return false;" class="text-dark ms-sm-2 font-weight-bold">Completed</a>
                        <a href="#" onclick="updateStatus(${a.id}, 'Pending'); return false;" class="text-dark ms-sm-2 font-weight-bold">Pending</a>
                        <a href="#" onclick="updateStatus(${a.id}, 'Active'); return false;" class="text-dark ms-sm-2 font-weight-bold">Active</a>
+                       <a href="#" onclick="updateStatus(${a.id}, 'No-Show'); return false;" class="text-dark ms-sm-2 font-weight-bold">"No-Show"</a>
                     </div>
                   </div>
                 </li>
@@ -646,6 +647,27 @@ async function initOfflineTotal() {
     const data = await res.json();
     document.getElementById('offline-total-display').innerText = `₹${data.total}`;
 }
+
+// Add this inside your DOMContentLoaded or at the bottom of the script
+function startAutoRefresh() {
+    // Refresh every 60 seconds (60000 ms)
+    setInterval(() => {
+        console.log("Checking for status updates...");
+        
+        // Only refresh if the manager isn't currently typing in a search box
+        // to avoid UI flickering/interruptions
+        const searchInput = document.activeElement;
+        if (searchInput.tagName !== 'INPUT' && searchInput.tagName !== 'SELECT') {
+            loadAppointments(currentPage); 
+        }
+    }, 60000); 
+}
+
+// Call it when the page loads
+document.addEventListener('DOMContentLoaded', () => {
+    loadAppointments(1);
+    startAutoRefresh();
+});
 
 // Call this when the page loads
 initOfflineTotal();

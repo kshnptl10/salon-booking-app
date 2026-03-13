@@ -167,95 +167,162 @@ exports.getAppoinments = async (req, res) => {
     }
 };
 
-exports.getCustomerAppointments = async (req, res) => {
+// exports.getCustomerAppointments = async (req, res) => {
     
-    const customerId = req.session.userId || req.query.userId || req.headers['user-id'];
+//     const customerId = req.session.userId || req.query.userId || req.headers['user-id'];
 
-    // 1. Check Session
-    if (!customerId) {
-        if (req.headers.accept === 'application/json') {
-            return res.status(401).json({ error: "Unauthorized. Please provide customerId." });
-        }
-        return res.status(401).json({ success: false, message: "Unauthorized" });
-    }
+//     // 1. Check Session
+//     if (!customerId) {
+//         if (req.headers.accept === 'application/json') {
+//             return res.status(401).json({ error: "Unauthorized. Please provide customerId." });
+//         }
+//         return res.status(401).json({ success: false, message: "Unauthorized" });
+//     }
 
-    // 2. Setup Query Vars
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 5; 
+//     // 2. Setup Query Vars
+//     const page = parseInt(req.query.page) || 1;
+//     const limit = parseInt(req.query.limit) || 5; 
+//     const offset = (page - 1) * limit;
+//     const isDashboard = req.query.flat === 'true';
+
+//     try {
+//         // --- QUERY: GET DATA ---
+//         const dataQuery = `
+//             SELECT 
+//                 a.id, 
+//                 to_char(a.appointment_date, 'YYYY-MM-DD') as appointment_date, 
+//                 a.appointment_time, 
+//                 ast.status_name AS status, 
+//                 s.salon_name, 
+//                 sv.name AS service_name, 
+//                 COALESCE(st.name, 'Unassigned Stylist') AS staff_name,
+//                 a.total_amount,
+//                 a.payment_status,
+//                 a.salon_id
+//             FROM appointments a
+//             JOIN salons s ON a.salon_id = s.salon_id
+//             JOIN services sv ON a.service_id = sv.id 
+//             JOIN appointment_status ast ON a.status_id = ast.id 
+//             LEFT JOIN staff st ON a.staff_id = st.id 
+//             WHERE a.customer_id = $1
+//             ORDER BY 
+//                 -- 🟢 PRIORITY SORTING: Active First, Canceled Last
+//                 CASE ast.status_name
+//                     WHEN 'Confirmed' THEN 1  -- Highest Priority
+//                     WHEN 'Pending'   THEN 2
+//                     WHEN 'Active'    THEN 3
+//                     WHEN 'Completed' THEN 4
+//                     WHEN 'No-Show'   THEN 5
+//                     WHEN 'Canceled'  THEN 6  -- Lowest Priority
+//                     WHEN 'Cancelled' THEN 6  -- (Just in case of spelling diff)
+//                     ELSE 7
+//                 END ASC,
+                
+//                 -- Secondary Sort: Newest Dates First
+//                 a.appointment_date DESC, 
+//                 a.appointment_time DESC 
+//             LIMIT $2 OFFSET $3
+//         `;
+        
+//         const { rows } = await pool.query(dataQuery, [customerId, limit, offset]);
+
+//         // --- 🚀 THE FIX IS HERE ---
+        
+//         if (isDashboard) {
+//             // Option A: Dashboard Mode -> Send JUST the Array [{}, {}]
+//             // This keeps your dashboard code working without changes!
+//             return res.json(rows); 
+//         } else {
+//             // Option B: Pagination Mode -> Send the full Object { appointments: [], pagination: {} }
+//             // This makes the "My Appointments" page work.
+            
+//             // (Only calculate count if we are in Pagination Mode to save speed)
+//             const countQuery = `SELECT COUNT(*) FROM appointments WHERE customer_id = $1`;
+//             const countResult = await pool.query(countQuery, [customerId]);
+//             const totalAppointments = parseInt(countResult.rows[0].count);
+//             const totalPages = Math.ceil(totalAppointments / limit);
+
+//             return res.json({
+//                 success: true,
+//                 appointments: rows,
+//                 pagination: {
+//                     currentPage: page,
+//                     totalPages: totalPages,
+//                     totalItems: totalAppointments
+//                 }
+//             });
+//         }
+
+//     } catch (err) {
+//         console.error("Error fetching appointments:", err.message);
+//         res.status(500).send('Server Error');
+//     }
+// };
+
+exports.getCustomerAppointments = async (req, res) => {
+    const customerId = req.session.userId;
+    // Destructure filters and pagination from query string
+    const { date, serviceId, page = 1, limit = 5 } = req.query;
+    
     const offset = (page - 1) * limit;
-    const isDashboard = req.query.flat === 'true';
 
     try {
-        // --- QUERY: GET DATA ---
-        const dataQuery = `
-            SELECT 
-                a.id, 
-                to_char(a.appointment_date, 'YYYY-MM-DD') as appointment_date, 
-                a.appointment_time, 
-                ast.status_name AS status, 
-                s.salon_name, 
-                sv.name AS service_name, 
-                COALESCE(st.name, 'Unassigned Stylist') AS staff_name,
-                a.total_amount,
-                a.payment_status,
-                a.salon_id
-            FROM appointments a
-            JOIN salons s ON a.salon_id = s.salon_id
-            JOIN services sv ON a.service_id = sv.id 
-            JOIN appointment_status ast ON a.status_id = ast.id 
-            LEFT JOIN staff st ON a.staff_id = st.id 
-            WHERE a.customer_id = $1
-            ORDER BY 
-                -- 🟢 PRIORITY SORTING: Active First, Canceled Last
-                CASE ast.status_name
-                    WHEN 'Confirmed' THEN 1  -- Highest Priority
-                    WHEN 'Pending'   THEN 2
-                    WHEN 'Active'    THEN 3
-                    WHEN 'Completed' THEN 4
-                    WHEN 'No-Show'   THEN 5
-                    WHEN 'Canceled'  THEN 6  -- Lowest Priority
-                    WHEN 'Cancelled' THEN 6  -- (Just in case of spelling diff)
-                    ELSE 7
-                END ASC,
-                
-                -- Secondary Sort: Newest Dates First
-                a.appointment_date DESC, 
-                a.appointment_time DESC 
-            LIMIT $2 OFFSET $3
-        `;
-        
-        const { rows } = await pool.query(dataQuery, [customerId, limit, offset]);
+        // 1. Build the Dynamic WHERE clause
+        let whereConditions = ["customer_id = $1"];
+        let params = [customerId];
 
-        // --- 🚀 THE FIX IS HERE ---
-        
-        if (isDashboard) {
-            // Option A: Dashboard Mode -> Send JUST the Array [{}, {}]
-            // This keeps your dashboard code working without changes!
-            return res.json(rows); 
-        } else {
-            // Option B: Pagination Mode -> Send the full Object { appointments: [], pagination: {} }
-            // This makes the "My Appointments" page work.
-            
-            // (Only calculate count if we are in Pagination Mode to save speed)
-            const countQuery = `SELECT COUNT(*) FROM appointments WHERE customer_id = $1`;
-            const countResult = await pool.query(countQuery, [customerId]);
-            const totalAppointments = parseInt(countResult.rows[0].count);
-            const totalPages = Math.ceil(totalAppointments / limit);
-
-            return res.json({
-                success: true,
-                appointments: rows,
-                pagination: {
-                    currentPage: page,
-                    totalPages: totalPages,
-                    totalItems: totalAppointments
-                }
-            });
+        if (date && date !== "") {
+            params.push(date);
+            whereConditions.push(`appointment_date = $${params.length}`);
         }
 
+        if (serviceId && serviceId !== "") {
+            params.push(serviceId);
+            whereConditions.push(`service_id = $${params.length}`);
+        }
+
+        const whereClause = `WHERE ` + whereConditions.join(" AND ");
+
+        // 2. Get Total Count for this specific filter set
+        const countQuery = `SELECT COUNT(*) FROM appointments ${whereClause}`;
+        const countRes = await pool.query(countQuery, params);
+        const totalItems = parseInt(countRes.rows[0].count);
+        const totalPages = Math.ceil(totalItems / limit);
+
+        // 3. Get the Paginated Data
+        // Note: We add limit and offset to the params array
+        const dataQuery = `
+            SELECT a.id, a.appointment_date, a.appointment_time, a.total_amount, 
+                   a.payment_status, s.name as service_name, sa.salon_name, 
+                   st.status_name as status, staff.name as staff_name
+            FROM appointments a
+            JOIN services s ON a.service_id = s.id
+            JOIN salons sa ON a.salon_id = sa.salon_id
+            JOIN appointment_status st ON a.status_id = st.id
+            LEFT JOIN staff ON a.staff_id = staff.id
+            ${whereClause}
+            ORDER BY a.appointment_date DESC, a.appointment_time DESC
+            LIMIT $${params.length + 1} OFFSET $${params.length + 2}
+        `;
+
+        const finalParams = [...params, limit, offset];
+        const result = await pool.query(dataQuery, finalParams);
+
+        // 4. Send Unified Response
+        res.json({
+            success: true,
+            appointments: result.rows,
+            pagination: {
+                totalItems,
+                totalPages,
+                currentPage: parseInt(page),
+                limit: parseInt(limit)
+            }
+        });
+
     } catch (err) {
-        console.error("Error fetching appointments:", err.message);
-        res.status(500).send('Server Error');
+        console.error("🔥 Filter/Pagination Error:", err);
+        res.status(500).json({ success: false, message: "Server error while fetching appointments." });
     }
 };
 
@@ -277,30 +344,48 @@ exports.getRecommendedServices = async (req, res) => {
 };
 
 exports.createAppointment = async (req, res) => {
-    // 1. Destructure and validate required fields from the request body
+    console.log("📥 Incoming Booking Data:", req.body);
     const { 
         user_id, 
         salon_id, 
         service_id, 
         appointment_date, 
         appointment_time, 
-        staff_id, // staff_id is optional/nullable
-        notes = '' // Default notes to empty string if not provided
+        staff_id, 
+        notes = '' 
     } = req.body;
 
-    // Use a unified variable for the customer ID
     const customer_id = user_id; 
 
-    // Early validation for essential IDs
     if (!customer_id) {
         return res.status(401).json({ msg: 'User ID required for booking.' }); 
     }
     if (!salon_id || !service_id || !appointment_date || !appointment_time) {
-        return res.status(400).json({ msg: 'Missing required appointment data (salon, service, date, or time).' });
+        return res.status(400).json({ msg: 'Missing required appointment data.' });
     }
 
     try {
-        // --- 1. Get Price (total_amount) ---
+        // --- NEW: PAST DATE & TIME VALIDATION ---
+        const selectedDateTime = new Date(`${appointment_date}T${appointment_time}`);
+        const now = new Date();
+
+        now.setMinutes(now.getMinutes() - 5);
+
+        if (selectedDateTime <= now) {
+            return res.status(400).json({ 
+                success: false, 
+                msg: 'This slot has already passed. Please select a time at least 5 minutes from now.' 
+            });
+        }
+        if (selectedDateTime <= now) {
+            return res.status(400).json({ 
+                success: false, 
+                msg: 'You cannot book an appointment in the past. Please select a future date and time.' 
+            });
+        }
+        // ----------------------------------------
+
+        // 1. Get Price
         const serviceRes = await pool.query(
             'SELECT price FROM services WHERE id = $1',
             [service_id]
@@ -310,32 +395,29 @@ exports.createAppointment = async (req, res) => {
         }
         const total_amount = serviceRes.rows[0].price;
 
-        // --- 2. Get Numerical Status ID for 'Pending' ---
+        // 2. Get Status ID for 'Pending'
         const statusRes = await pool.query(
             "SELECT id FROM appointment_status WHERE status_name = 'Pending'"
         );
         if (statusRes.rows.length === 0) {
-            console.error("Database error: 'Pending' status ID not found.");
             return res.status(500).json({ msg: 'System configuration error (Status ID missing).' });
         }
         const pendingStatusId = statusRes.rows[0].id;
         
+        // 3. Conflict Check
         const conflictCheckQuery = `
-        SELECT id, salon_id 
-        FROM appointments 
-        WHERE customer_id = $1 
-          AND appointment_date = $2 
-          AND appointment_time = $3
-          AND status_id IN (1, 2)
-    `;
+            SELECT id FROM appointments 
+            WHERE customer_id = $1 
+              AND appointment_date = $2 
+              AND appointment_time = $3
+              AND status_id IN (SELECT id FROM appointment_status WHERE status_name IN ('Pending', 'Confirmed'))
+        `;
         const conflictCheckResult = await pool.query(conflictCheckQuery, [customer_id, appointment_date, appointment_time]);
         if (conflictCheckResult.rows.length > 0) {
-            return res.status(409).json({success: false, msg: 'You already have an appointment at this date and time.' });
+            return res.status(409).json({ success: false, msg: 'You already have an appointment at this date and time.' });
         }
 
-        // --- 3. Prepare Final Query Execution ---
-        
-        // Use COALESCE (staff_id || null) for optional staff ID
+        // 4. Insert Appointment
         const values = [
             customer_id, 
             salon_id, 
@@ -345,12 +427,9 @@ exports.createAppointment = async (req, res) => {
             appointment_time, 
             total_amount, 
             pendingStatusId,
-            // The 'notes' variable is required for the final query if you include it in the column list
-            'Unpaid' // payment_status is hardcoded to 'Unpaid'
+            'Unpaid'
         ];
 
-        // CRITICAL: Ensure the number of parameters and the column list match the values array.
-        // NOTE: If you do not have a 'notes' column, remove $10 and the 'notes' value above.
         const insertQuery = `
             INSERT INTO appointments 
             (customer_id, salon_id, service_id, staff_id, appointment_date, appointment_time, total_amount, status_id, payment_status)
@@ -358,25 +437,41 @@ exports.createAppointment = async (req, res) => {
             RETURNING id`; 
 
         const result = await pool.query(insertQuery, values);
-       if (result.rows.length > 0) {
-            const newAppointmentId = result.rows[0].id; // <--- CAPTURE THE ID
-
-            // 2. Send the ID back to the frontend
+        
+        if (result.rows.length > 0) {
             res.json({ 
                 success: true, 
                 message: "Booking created successfully", 
-                appointmentId: newAppointmentId // <--- CRITICAL: SEND IT BACK
+                appointmentId: result.rows[0].id 
             });
         } else {
             res.status(500).json({ success: false, message: "Insert failed, no ID returned." });
         }
 
     } catch (err) {
-        // Log the detailed error for backend debugging
         console.error("Error creating appointment:", err.message);
-        
-        // Return a clean JSON error response to the client
         res.status(500).json({ msg: 'Server Error during appointment creation.' });
+    }
+};
+
+exports.getUsedServices = async (req, res) => {
+    const customerId = req.session.userId;
+
+    // This query finds unique services already present in the user's appointments
+    const query = `
+        SELECT DISTINCT s.id, s.name 
+        FROM services s
+        JOIN appointments a ON s.id = a.service_id
+        WHERE a.customer_id = $1
+        ORDER BY s.name ASC
+    `;
+
+    try {
+        const result = await pool.query(query, [customerId]);
+        res.json({ success: true, services: result.rows });
+    } catch (err) {
+        console.error("Error fetching used services:", err);
+        res.status(500).json({ success: false, message: "Database error" });
     }
 };
 

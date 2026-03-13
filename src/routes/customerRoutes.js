@@ -16,7 +16,7 @@ router.get('/staff/:salonId', customerController.getAvailableStaffBySalon);
 router.get('/timeslots', customerController.getAvailableTimeSlots);
 router.get('/my-appointments', customerController.getCustomerAppointments);
 router.get('/customerAppointments', customerController.getAppoinments); // Fixed typo in route name
-
+router.get('/my-used-services', customerController.getUsedServices);
 // --- 2. Authorization Boundary ---
 // Apply the authorization middleware here. 
 // All routes BELOW this line require the 'customer' role.

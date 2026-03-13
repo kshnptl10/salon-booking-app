@@ -775,26 +775,73 @@ exports.getThisMonthAppointments = async (req, res) => {
     }
 };
 
+// exports.updateAppointmentStatus = async (req, res) => {
+//     const { id } = req.params;
+//     const { status } = req.body;
+//     const { userRole, salonId } = req.session;
+
+//     try {
+//         const statusIdResult = await pool.query("SELECT id FROM appointment_status WHERE status_name = $1", [status]);
+//         if (statusIdResult.rows.length === 0) return res.status(400).json({ success: false, message: "Invalid status" });
+        
+//         const statusId = statusIdResult.rows[0].id;
+
+//         let query, params;
+        
+//         // SECURITY: Ensure manager can only update their own salon's appointment
+//         if (userRole === 'superadmin') {
+//             query = "UPDATE appointments SET status_id = $1 WHERE id = $2";
+//             params = [statusId, id];
+//         } else {
+//             // Manager: Enforce salon_id check on the update
+//             query = "UPDATE appointments SET status_id = $1 WHERE id = $2 AND salon_id = $3";
+//             params = [statusId, id, salonId];
+//         }
+
+//         const result = await pool.query(query, params);
+        
+//         if (result.rowCount === 0) {
+//             return res.status(404).json({ success: false, message: "Appointment not found or access denied" });
+//         }
+
+//         res.json({ success: true, message: "Status updated" });
+//     } catch (err) {
+//         console.error("Error updating status", err);
+//         res.status(500).json({ success: false, message: "Error updating status" });
+//     }
+// };
+
 exports.updateAppointmentStatus = async (req, res) => {
     const { id } = req.params;
     const { status } = req.body;
     const { userRole, salonId } = req.session;
 
     try {
-        const statusIdResult = await pool.query("SELECT id FROM appointment_status WHERE status_name = $1", [status]);
-        if (statusIdResult.rows.length === 0) return res.status(400).json({ success: false, message: "Invalid status" });
+        // 1. Get Numerical ID for the status name
+        const statusIdResult = await pool.query(
+            "SELECT id FROM appointment_status WHERE status_name = $1", 
+            [status]
+        );
+        
+        if (statusIdResult.rows.length === 0) {
+            return res.status(400).json({ success: false, message: "Invalid status" });
+        }
         
         const statusId = statusIdResult.rows[0].id;
 
+        // 2. Logic: Record timestamp ONLY when status becomes 'Active'
+        const isActivating = (status === 'Active');
+        const setStartTimeSql = isActivating ? ", actual_start_time = NOW()" : "";
+
         let query, params;
         
-        // SECURITY: Ensure manager can only update their own salon's appointment
+        // 3. SECURITY: Role-based filtering
         if (userRole === 'superadmin') {
-            query = "UPDATE appointments SET status_id = $1 WHERE id = $2";
+            query = `UPDATE appointments SET status_id = $1 ${setStartTimeSql} WHERE id = $2`;
             params = [statusId, id];
         } else {
-            // Manager: Enforce salon_id check on the update
-            query = "UPDATE appointments SET status_id = $1 WHERE id = $2 AND salon_id = $3";
+            // Manager: Restrict to their own salon
+            query = `UPDATE appointments SET status_id = $1 ${setStartTimeSql} WHERE id = $2 AND salon_id = $3`;
             params = [statusId, id, salonId];
         }
 
@@ -804,9 +851,13 @@ exports.updateAppointmentStatus = async (req, res) => {
             return res.status(404).json({ success: false, message: "Appointment not found or access denied" });
         }
 
-        res.json({ success: true, message: "Status updated" });
+        res.json({ 
+            success: true, 
+            message: `Status updated to ${status}${isActivating ? ' and timer started' : ''}` 
+        });
+
     } catch (err) {
-        console.error("Error updating status", err);
+        console.error("Error updating status:", err);
         res.status(500).json({ success: false, message: "Error updating status" });
     }
 };

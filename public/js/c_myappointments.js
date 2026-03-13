@@ -25,16 +25,24 @@ let currentPage = 1; // Global variable to track page
 async function loadAppointments(page = 1) {
     currentPage = page;
     
+    const dateValue = document.getElementById('filterDate').value;
+    const serviceId = document.getElementById('filterService').value;
+    
+    // 2. Build the URL with both Pagination and Filter params
+    let url = `/api/customer/my-appointments?page=${page}&limit=5`;
+
+    if (dateValue) url += `&date=${dateValue}`;
+    if (serviceId) url += `&serviceId=${serviceId}`;
+
     try {
-        // Pass the 'page' query param
-        const res = await fetch(`/api/customer/my-appointments?page=${page}&limit=5`);
+        const res = await fetch(url, { credentials: 'same-origin' });
         const data = await res.json();
 
         if (data.success) {
-            renderAppointments(data.appointments); // Helper to draw table
-            renderPagination(data.pagination);     // Helper to draw buttons
+            renderAppointments(data.appointments); // Draws the cards
+            renderPagination(data.pagination);     // Draws the buttons
         } else {
-            console.error("Failed to load data");
+            console.error("Failed to load appointments:", data.message);
         }
     } catch (error) {
         console.error("Network Error:", error);
@@ -184,5 +192,33 @@ async function cancelAppointment(apptId) {
         alert("Network error. Could not cancel appointment.");
     }
 }
+
+async function populateServiceFilter() {
+    try {
+        const res = await fetch("/api/customer/my-used-services", { credentials: 'same-origin' });
+        const data = await res.json();
+        const select = document.getElementById("filterService");
+
+        if (data.success && data.services) {
+            // Keep the "All Services" option and add the rest
+            data.services.forEach(service => {
+                const opt = new Option(service.name, service.id);
+                select.add(opt);
+            });
+        }
+    } catch (err) {
+        console.error("Could not load booked services filter", err);
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    populateServiceFilter(); // <--- Populate the dropdown
+    loadAppointments(1);     // <--- Load the list
+});
+
+document.getElementById('btnFilter').addEventListener('click', (e) => {
+    e.preventDefault(); // Prevent page reload if it's inside a form
+    loadAppointments(1); // Reset to page 1 for new search results
+});
 
 loadAppointments();

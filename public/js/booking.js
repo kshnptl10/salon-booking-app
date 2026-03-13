@@ -12,6 +12,14 @@ const elements = {
     profileMenuPopup: document.getElementById('profileMenuPopup')
 };
 
+const today = new Date().toISOString().split('T')[0];
+const dateInput = document.querySelector('input[name="date"]');;
+const slotContainer = document.getElementById('timeSlotContainer');
+
+if (dateInput) {
+    dateInput.setAttribute('min', today);
+}
+
 const formatTime = (timeStr) => {
     if (!timeStr) return "";
     const [hourStr, minute] = timeStr.split(":");
@@ -180,12 +188,30 @@ async function renderTimeSlots(salonId, date) {
             return;
         }
 
+        const now = new Date();
+        const today = new Date().toISOString().split('T')[0];
+
         // Render buttons using data attributes
-        container.innerHTML = slots.map(slot => `
-            <button type="button" class="btn btn-slot" data-value="${slot.slot_time || slot}">
-                ${formatTime(slot.slot_time || slot)}
-            </button>
-        `).join('');
+        container.innerHTML = slots.map(slot => {
+            const slotTimeStr = slot.slot_time || slot;
+            const [hour, minute] = slotTimeStr.split(':').map(Number);
+            
+            // Create a date object for this specific slot
+            const slotDateTime = new Date(date);
+            slotDateTime.setHours(hour, minute, 0, 0);
+
+            // Logic: Is it today AND is the time in the past?
+            const isPast = (date === today && slotDateTime <= now);
+
+            return `
+                <button type="button" 
+                    class="btn btn-slot ${isPast ? 'disabled-slot' : ''}" 
+                    data-value="${slotTimeStr}"
+                    ${isPast ? 'disabled title="This time has passed"' : ''}>
+                    ${formatTime(slotTimeStr)}
+                </button>
+            `;
+        }).join('');
 
     } catch (error) {
         console.error("Error fetching timeslots:", error);
@@ -268,7 +294,12 @@ elements.bookingForm.addEventListener("submit", async (e) => {
 
         const data = await res.json();
 
-        if (!res.ok) throw new Error(data.message || 'Booking failed.');
+        if (!res.ok) { 
+            showValidationMessage(data.msg || "Booking failed"); // Use 'data' instead of 'result'
+            submitBtn.disabled = false;
+            submitBtn.innerText = 'Confirm Booking';
+            return; 
+        }
 
         // 4. STEP 2: INITIATE PAYMENT
         const newAppointmentId = data.appointmentId; 
@@ -282,6 +313,44 @@ elements.bookingForm.addEventListener("submit", async (e) => {
         submitBtn.disabled = false;
         submitBtn.innerText = 'Confirm Booking';
     }
+});
+
+function showValidationMessage(message) {
+    const errorDiv = document.getElementById('validation-error');
+    errorDiv.textContent = message;
+    errorDiv.style.display = 'block';
+    
+    // Smoothly scroll to the error
+    errorDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+    // Optional: Hide it after 5 seconds
+    setTimeout(() => {
+        errorDiv.style.display = 'none';
+    }, 5000);
+}
+// Replace your existing date change listener with this clean version
+elements.dateInput.addEventListener('change', function() {
+    const selectedDateStr = this.value;
+    const now = new Date();
+    
+    // 1. Check if the date itself is in the past
+    // Create a date object from the input (YYYY-MM-DD)
+    const [year, month, day] = selectedDateStr.split('-').map(Number);
+    const selectedDate = new Date(year, month - 1, day);
+    
+    // Create a "today" object at 00:00:00 for fair comparison
+    const comparisonToday = new Date();
+    comparisonToday.setHours(0, 0, 0, 0);
+
+    if (selectedDate < comparisonToday) {
+        showValidationMessage("Please select today or a future date.");
+        this.value = ''; // Reset the input
+        elements.timeSlotContainer.innerHTML = '';
+        return;
+    }
+
+    // 2. If date is valid, render the slots (logic inside handles past hours)
+    renderTimeSlots(elements.salonSelect.value, selectedDateStr);
 });
 
 async function initiatePayment(appointmentId, amount) {
