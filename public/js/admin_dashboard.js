@@ -90,7 +90,7 @@ async function loadAppointments() {
                        <a href="#" onclick="updateStatus(${a.id}, 'Completed'); return false;" class="text-dark ms-sm-2 font-weight-bold">Completed</a>
                        <a href="#" onclick="updateStatus(${a.id}, 'Pending'); return false;" class="text-dark ms-sm-2 font-weight-bold">Pending</a>
                        <a href="#" onclick="updateStatus(${a.id}, 'Active'); return false;" class="text-dark ms-sm-2 font-weight-bold">Active</a>
-                       <a href="#" onclick="updateStatus(${a.id}, 'No-Show'); return false;" class="text-dark ms-sm-2 font-weight-bold">"No-Show"</a>
+                       <a href="#" onclick="updateStatus(${a.id}, 'No-Show'); return false;" class="text-dark ms-sm-2 font-weight-bold">No-Show</a>
                     </div>
                   </div>
                 </li>
